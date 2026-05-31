@@ -851,7 +851,7 @@ function renderReport(p, rows){
     const ss=ssDisplay(s.socialSecurityTaxTreatment), pen=incDisplay(s.pensionTaxTreatment), ira=incDisplay(s.ira401kTaxTreatment);
     const idv = s.hasStateIncomeTax?['yes','Yes']:['no','No'];
     const cg=cgDisplay(s.capitalGainsTaxTreatment);
-    const cell=(d)=>`<td class="left"><span class="${d[0]}">${d [ppl-ai-file-upload.s3.amazonaws](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/40338417/a0e7db74-a1c0-4340-ba05-c96e1a9f6218/paste.txt)}</span></td>`;
+    const cell=(d)=>`<td class="left"><span class="${d[0]}">${d[1]}</span></td>`;
     h+=`<tr><td class="left statecell">${esc(s.stateName)}<span class="abbr">${s.abbreviation}</span></td>
       <td class="left"><span class="conf conf-${r.confidence}">${r.confidence}</span></td>
       ${cell(ss)}${cell(pen)}${cell(ira)}<td class="left"><span class="no">No</span></td>${cell(idv)}${cell(cg)}
@@ -969,4 +969,3 @@ calculate();
 </script>
 </body>
 </html>
-```
