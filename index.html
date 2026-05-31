@@ -3,1134 +3,272 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RetireState Optimizer, Beta + FIRE Snapshot</title>
+<title>RetireState Optimizer, Beta + Withdrawal Strategy Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0f2540;
-  --ink-2:#1c3a5e;
-  --paper:#f6f4ee;
-  --card:#ffffff;
-  --line:#dcd7cb;
-  --line-2:#e8e4da;
-  --muted:#6b7280;
-  --muted-2:#8a8f98;
-  --accent:#a67c1f;
-  --accent-soft:#f3ead2;
-  --good:#1f6b4f;
-  --good-soft:#e3f0e8;
-  --warn:#9a6a12;
-  --warn-soft:#f7eed6;
-  --bad:#9b2c2c;
-  --bad-soft:#f6e2e1;
-  --neutral:#3a4a5e;
-  --shadow:0 1px 2px rgba(15,37,64,.06),0 6px 22px rgba(15,37,64,.06);
+  --ink:#0f2540; --ink-2:#1c3a5e; --ink-3:#091827;
+  --paper:#f6f4ee; --card:#ffffff; --line:#dcd7cb; --line-2:#e8e4da;
+  --muted:#6b7280; --muted-2:#8a8f98; --accent:#a67c1f; --accent-2:#d4a937; --accent-soft:#f3ead2;
+  --good:#1f6b4f; --good-soft:#e3f0e8; --warn:#9a6a12; --warn-soft:#f7eed6; --bad:#9b2c2c; --bad-soft:#f6e2e1;
+  --neutral:#3a4a5e; --shadow:0 1px 2px rgba(15,37,64,.06),0 6px 22px rgba(15,37,64,.06);
 }
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{
-  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--paper);
-  color:var(--ink);
-  line-height:1.5;
-  font-size:15px;
-  -webkit-font-smoothing:antialiased;
-}
-.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
-h1,h2,h3{font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:700;letter-spacing:-.03em;margin:0;}
-a{color:var(--accent)}
-
-.wrap{max-width:1180px;margin:0 auto;padding:32px 22px 70px}
-header.site{
-  position:relative;
-  background:
-    radial-gradient(circle at 18% 10%,rgba(166,124,31,.18),transparent 28%),
-    linear-gradient(120deg,#2f2e29 0%,#1d2330 48%,#0f2b4b 100%);
-  color:#f6f4ee;
-  border-bottom:2px solid rgba(166,124,31,.45);
-  overflow:hidden;
-}
-header.site:after{
-  content:"";
-  position:absolute;
-  inset:auto 0 0 0;
-  height:1px;
-  background:rgba(255,255,255,.2);
-}
-.site-inner{max-width:100%;margin:0 auto;padding:54px 30px 78px;position:relative}
-.brandrow{
-  position:absolute;
-  top:28px;left:30px;right:30px;
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  font-family:"IBM Plex Mono",monospace;
-  font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
-  color:#e0ad3f;
-}
-.brandrow .brand-left,.brandrow .brand-right{white-space:nowrap}
-.brandrow .badge{display:none}
-.hero-copy{max-width:980px;margin:0 auto;text-align:center;padding-top:22px}
-header.site h1{font-size:clamp(42px,5vw,68px);color:#fff;line-height:.98;font-weight:700;letter-spacing:-.055em}
-header.site h1 .gold{color:#e0ad3f}
-header.site p{margin:18px auto 0;max-width:860px;color:#d3d7df;font-size:18px;line-height:1.45;font-weight:600}
-header.site p.vintage{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#9aa8ba;margin-top:18px;letter-spacing:.04em;font-weight:500}
-.hero-pills{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:22px}
-.hero-pill{
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.07);
-  color:#c8d0dc;
-  border-radius:999px;
-  padding:8px 14px;
-  font-size:14px;
-  font-weight:700;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-}
-@media (max-width:720px){
-  .site-inner{padding:48px 18px 58px}
-  .brandrow{position:static;margin-bottom:26px;justify-content:center;flex-direction:column;font-size:11px;gap:8px}
-  header.site p{font-size:15px}
-}
-
-.section{margin-top:26px}
-.section > h2{font-size:22px;display:flex;align-items:center;gap:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.22em;color:#1c3a5e}
-.section > h2 .n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 7px;font-weight:700;letter-spacing:0}
-.section .hint{color:var(--muted);font-size:13px;margin:2px 0 14px}
-
-.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(15,37,64,.08);padding:28px 34px}
-
-.formgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px 18px}
-.fieldgroup-title{grid-column:1/-1;font-family:"IBM Plex Sans",sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-top:10px}
-.fieldgroup-title:first-child{margin-top:0}
-label.f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--neutral);font-weight:500}
-label.f .lbl{display:flex;align-items:center;gap:6px}
-label.f input,label.f select{
-  font-family:inherit;font-size:14px;color:var(--ink);background:#fcfbf8;
-  border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;
-}
-label.f input.num-in{font-family:"IBM Plex Mono",monospace}
-label.f input:focus,label.f select:focus{outline:none;border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(28,58,94,.12)}
-.err-msg{color:var(--bad);font-size:12px;margin-top:2px}
-.hidden{display:none !important}
-.input-note{font-size:11.75px;color:var(--muted);margin-top:4px;line-height:1.45}
-
-.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
-.preset-btn{font-size:12.5px;font-family:"IBM Plex Mono",monospace;background:#fff;border:1px solid var(--line);color:var(--ink-2);padding:7px 11px;border-radius:999px;cursor:pointer;transition:.15s}
-.preset-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.state-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px}
-.state-chip{display:flex;align-items:center;gap:7px;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;cursor:pointer;background:#fcfbf8;user-select:none;transition:.12s}
-.state-chip:hover{border-color:var(--ink-2)}
-.state-chip.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
-.state-chip input{accent-color:var(--accent);margin:0}
-.sel-count{font-size:13px;color:var(--muted);margin-top:12px}
-.sel-count.bad{color:var(--bad);font-weight:600}
-.beta-note{
-  margin-top:14px;
-  padding:12px 14px;
-  border:1px solid var(--line);
-  border-left:4px solid var(--accent);
-  border-radius:10px;
-  background:#fbfaf6;
-  font-size:12.75px;
-  color:var(--neutral);
-  line-height:1.55;
-}
-.beta-note strong{color:var(--ink-2)}
-
-.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-.btn{font-family:inherit;font-size:14px;font-weight:600;border-radius:9px;padding:11px 18px;cursor:pointer;border:1px solid transparent;transition:.15s}
-.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink)}
-.btn-primary:hover{background:#132f52}
-.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
-.btn-ghost:hover{border-color:var(--ink-2)}
-.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.card .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
-.card .v{font-family:"IBM Plex Mono",monospace;font-size:23px;font-weight:600;margin-top:7px;line-height:1.15}
-.card .sub{font-size:12px;color:var(--muted);margin-top:4px}
-.card.accent-good{border-top:3px solid var(--good)}
-.card.accent-bad{border-top:3px solid var(--bad)}
-.card.accent-gold{border-top:3px solid var(--accent)}
-.card.accent-ink{border-top:3px solid var(--ink-2)}
-
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow)}
-table{border-collapse:collapse;width:100%;font-size:13px}
-thead th{background:var(--ink);color:#eaf0f7;font-weight:600;text-align:right;padding:11px 12px;white-space:nowrap;font-size:12px;letter-spacing:.01em;position:sticky;top:0}
-thead th:first-child,thead th.left{text-align:left}
-tbody td{padding:10px 12px;border-bottom:1px solid var(--line-2);text-align:right;white-space:nowrap}
-tbody td:first-child,tbody td.left{text-align:left}
-tbody tr:nth-child(even){background:#faf8f3}
-tbody tr:hover{background:var(--accent-soft)}
-.cell-num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
-.rankbadge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:12px}
-.rank-1{background:var(--good);color:#fff}
-.rank-last{background:var(--bad-soft);color:var(--bad)}
-.rank-mid{background:var(--line-2);color:var(--ink-2)}
-.statecell{font-weight:600}
-.statecell .abbr{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-weight:500;font-size:11.5px;margin-left:5px}
-.est-tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.05em;color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}
-.verdict{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:normal}
-.v-good{background:var(--good-soft);color:var(--good)}
-.v-warn{background:var(--warn-soft);color:var(--warn)}
-.v-bad{background:var(--bad-soft);color:var(--bad)}
-.v-neutral{background:var(--line-2);color:var(--ink-2)}
-.yes{color:var(--bad);font-weight:600}
-.no{color:var(--good);font-weight:600}
-.partial{color:var(--warn);font-weight:600}
-.neg{color:var(--good)}
-.conf{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.04em;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;font-weight:600}
-.conf-High{color:var(--good);background:var(--good-soft)}
-.conf-Medium{color:var(--warn);background:var(--warn-soft)}
-.conf-Low{color:var(--bad);background:var(--bad-soft)}
-.assump{font-size:12px;color:var(--muted);background:#efece4;border:1px solid var(--line);border-radius:8px;padding:10px 13px;margin:10px 0 0;line-height:1.55}
-
-.flagcols{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.flagcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
-.flagcard h3{font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.flagcard h3 .score{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;color:var(--muted)}
-.flag{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line-2);font-size:12.5px;color:var(--neutral)}
-.flag:first-of-type{border-top:none}
-.flag .dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;margin-top:5px}
-.flag.sev-high .dot{background:var(--bad)}
-.flag.sev-med .dot{background:var(--warn)}
-.flag.sev-low .dot{background:var(--accent)}
-.flag .ft{font-weight:600;color:var(--ink);display:block;margin-bottom:1px}
-.noflags{font-size:13px;color:var(--good);display:flex;gap:8px;align-items:center;padding:8px 0}
-
-.reco{background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:22px 24px;box-shadow:var(--shadow)}
-.reco h3{font-size:17px;margin:18px 0 6px}
-.reco h3:first-child{margin-top:0}
-.reco p{margin:0 0 11px;font-size:14.5px;color:#243449;line-height:1.62}
-.reco p strong{color:var(--ink)}
-.reco .band{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--accent-soft);color:#7a5c14;padding:3px 9px;border-radius:6px;margin-bottom:12px}
-.reco ul{margin:0 0 12px;padding-left:20px}
-.reco li{font-size:14px;margin-bottom:6px;color:#243449}
-.reco li b{color:var(--ink)}
-
-.disclaimer{margin-top:30px;font-size:12.5px;color:var(--muted);background:#efece4;border:1px solid var(--line);border-radius:10px;padding:16px 18px;line-height:1.6}
-.disclaimer strong{color:var(--ink-2)}
-.profile-readout{font-size:13px;color:var(--neutral);display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 22px;margin-bottom:4px}
-.profile-readout .pr{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding:4px 0}
-.profile-readout .pr span:last-child{font-family:"IBM Plex Mono",monospace;color:var(--ink)}
-
-#report.empty-state{text-align:center;color:var(--muted);padding:40px 20px;border:1px dashed var(--line);border-radius:14px;background:#fbfaf6}
-#report.empty-state h2{color:var(--ink-2);margin-bottom:8px}
-
-
-.fire-note{
-  margin-top:10px;
-  padding:12px 14px;
-  border:1px solid var(--line);
-  border-left:4px solid var(--ink-2);
-  border-radius:10px;
-  background:#fbfaf6;
-  font-size:12.75px;
-  color:var(--neutral);
-  line-height:1.55;
-}
-.small-table td,.small-table th{white-space:normal;}
-
-@media print{
-  body{background:#fff;font-size:11.5px}
-  header.site{background:#fff !important;color:#000;border-bottom:2px solid #000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  header.site h1{color:#000}
-  header.site p,.brandrow .badge{color:#333;border-color:#999}
-  .no-print{display:none !important}
-  .panel,.card,.flagcard,.reco,.tablewrap{box-shadow:none}
-  thead th{background:#22364f !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .verdict,.rankbadge,.card,.v-good,.v-bad,.v-warn{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .wrap{padding-bottom:10px}
-  .section{break-inside:avoid}
-  .tablewrap{overflow:visible}
-}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased}
+.num,.cell-num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0} a{color:var(--accent)}
+.hero{background:radial-gradient(circle at 20% 15%,rgba(212,169,55,.22),transparent 26%),linear-gradient(135deg,#091827 0%,#0f2540 48%,#182f4d 100%);color:#fff;border-bottom:3px solid var(--accent);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;inset:auto -20% -70% -20%;height:220px;background:radial-gradient(circle,rgba(255,255,255,.06),transparent 64%);pointer-events:none}.hero-inner{max-width:1180px;margin:0 auto;padding:34px 22px 30px;position:relative;z-index:1}.topline{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}.top-pill{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#f6e9c7;border:1px solid rgba(246,233,199,.35);padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.04)}.hero h1{font-size:clamp(34px,5vw,56px);line-height:.98;max-width:840px}.hero .subtitle{margin-top:14px;max-width:850px;color:#c9d4e2;font-size:15.5px}.hero .vintage{font-family:"IBM Plex Mono",monospace;color:#9fb1c6;font-size:11.5px;margin-top:12px}.hero-cards{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:9px 13px;color:#e6edf5;font-size:12.5px}.hero-card strong{color:#fff}
+.tabs{max-width:1180px;margin:22px auto 0;padding:0 22px;display:flex;gap:10px;flex-wrap:wrap}.tab-btn{border:1px solid var(--line);background:#fff;color:var(--ink-2);padding:11px 16px;border-radius:999px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:var(--shadow)}.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}.tab-panel{display:none}.tab-panel.active{display:block}.wrap{max-width:1180px;margin:0 auto;padding:0 22px 70px}.section{margin-top:26px}.section>h2{font-size:20px;display:flex;align-items:center;gap:10px;margin-bottom:4px}.section>h2 .n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 7px;font-weight:500}.hint{color:var(--muted);font-size:13px;margin:2px 0 14px}.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:22px}.formgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px 18px}.fieldgroup-title{grid-column:1/-1;font-family:"IBM Plex Serif",serif;font-size:14px;color:var(--ink-2);font-weight:600;border-bottom:1px solid var(--line-2);padding-bottom:6px;margin-top:6px}.fieldgroup-title:first-child{margin-top:0}label.f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--neutral);font-weight:500}label.f input,label.f select{font-family:inherit;font-size:14px;color:var(--ink);background:#fcfbf8;border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}label.f input.num-in{font-family:"IBM Plex Mono",monospace}label.f input:focus,label.f select:focus{outline:none;border-color:var(--ink-2);box-shadow:0 0 0 3px rgba(28,58,94,.12)}.hidden{display:none!important}.input-note{font-size:11.75px;color:var(--muted);margin-top:4px;line-height:1.45}.presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.preset-btn{font-size:12.5px;font-family:"IBM Plex Mono",monospace;background:#fff;border:1px solid var(--line);color:var(--ink-2);padding:7px 11px;border-radius:999px;cursor:pointer;transition:.15s}.preset-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}.state-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px}.state-chip{display:flex;align-items:center;gap:7px;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 9px;cursor:pointer;background:#fcfbf8;user-select:none;transition:.12s}.state-chip:hover{border-color:var(--ink-2)}.state-chip.sel{background:var(--ink);color:#fff;border-color:var(--ink)}.state-chip input{accent-color:var(--accent);margin:0}.sel-count{font-size:13px;color:var(--muted);margin-top:12px}.sel-count.bad{color:var(--bad);font-weight:600}.beta-note,.assump{font-size:12.5px;color:var(--neutral);background:#fbfaf6;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:12px 14px;margin-top:14px;line-height:1.55}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.btn{font-family:inherit;font-size:14px;font-weight:700;border-radius:9px;padding:11px 18px;cursor:pointer;border:1px solid transparent;transition:.15s}.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#8c681a}.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}.btn-ghost:hover{border-color:var(--ink-2)}.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 16px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}.card .k{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}.card .v{font-family:"IBM Plex Mono",monospace;font-size:23px;font-weight:700;margin-top:7px;line-height:1.15}.card .sub{font-size:12px;color:var(--muted);margin-top:4px}.accent-good{border-top:3px solid var(--good)}.accent-bad{border-top:3px solid var(--bad)}.accent-gold{border-top:3px solid var(--accent)}.accent-ink{border-top:3px solid var(--ink-2)}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow)}table{border-collapse:collapse;width:100%;font-size:13px}thead th{background:var(--ink);color:#eaf0f7;font-weight:700;text-align:right;padding:11px 12px;white-space:nowrap;font-size:12px;letter-spacing:.01em;position:sticky;top:0}thead th:first-child,thead th.left{text-align:left}tbody td{padding:10px 12px;border-bottom:1px solid var(--line-2);text-align:right;white-space:nowrap}tbody td:first-child,tbody td.left{text-align:left}tbody tr:nth-child(even){background:#faf8f3}tbody tr:hover{background:var(--accent-soft)}.rankbadge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:12px}.rank-1{background:var(--good);color:#fff}.rank-last{background:var(--bad-soft);color:var(--bad)}.rank-mid{background:var(--line-2);color:var(--ink-2)}.statecell{font-weight:700}.abbr{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-weight:500;font-size:11.5px;margin-left:5px}.est-tag{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.05em;color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}.verdict{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:normal}.v-good{background:var(--good-soft);color:var(--good)}.v-warn{background:var(--warn-soft);color:var(--warn)}.v-bad{background:var(--bad-soft);color:var(--bad)}.v-neutral{background:var(--line-2);color:var(--ink-2)}.yes{color:var(--bad);font-weight:700}.no,.neg{color:var(--good);font-weight:700}.partial{color:var(--warn);font-weight:700}.conf{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.04em;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;font-weight:700}.conf-High{color:var(--good);background:var(--good-soft)}.conf-Medium{color:var(--warn);background:var(--warn-soft)}.conf-Low{color:var(--bad);background:var(--bad-soft)}.flagcols{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}.flagcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}.flagcard h3{font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.flag{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line-2);font-size:12.5px;color:var(--neutral)}.flag:first-of-type{border-top:none}.flag .dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;margin-top:5px}.flag.sev-high .dot{background:var(--bad)}.flag.sev-med .dot{background:var(--warn)}.flag.sev-low .dot{background:var(--accent)}.flag .ft{font-weight:700;color:var(--ink);display:block;margin-bottom:1px}.noflags{font-size:13px;color:var(--good);display:flex;gap:8px;align-items:center;padding:8px 0}.reco{background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:22px 24px;box-shadow:var(--shadow)}.reco h3{font-size:17px;margin:18px 0 6px}.reco h3:first-child{margin-top:0}.reco p{margin:0 0 11px;font-size:14.5px;color:#243449;line-height:1.62}.reco .band{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--accent-soft);color:#7a5c14;padding:3px 9px;border-radius:6px;margin-bottom:12px}.reco ul{margin:0 0 12px;padding-left:20px}.reco li{font-size:14px;margin-bottom:6px;color:#243449}.disclaimer{margin-top:30px;font-size:12.5px;color:var(--muted);background:#efece4;border:1px solid var(--line);border-radius:10px;padding:16px 18px;line-height:1.6}.disclaimer strong{color:var(--ink-2)}#stateReport.empty-state,#fireReport.empty-state{text-align:center;color:var(--muted);padding:40px 20px;border:1px dashed var(--line);border-radius:14px;background:#fbfaf6}.profile-readout{font-size:13px;color:var(--neutral);display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 22px;margin-bottom:4px}.profile-readout .pr{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding:4px 0}.profile-readout .pr span:last-child{font-family:"IBM Plex Mono",monospace;color:var(--ink)}
+@media print{body{background:#fff;font-size:11.5px}.hero{background:#fff!important;color:#000;border-bottom:2px solid #000}.hero h1{color:#000}.hero p,.top-pill{color:#333;border-color:#999}.no-print,.tabs{display:none!important}.panel,.card,.flagcard,.reco,.tablewrap{box-shadow:none}thead th{background:#22364f!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.wrap{padding-bottom:10px}.section{break-inside:avoid}.tablewrap{overflow:visible}}
 </style>
 </head>
 <body>
-
-<header class="site">
-  <div class="site-inner">
-    <div class="brandrow">
-      <span class="brand-left">R/RUPEESTORIES</span>
-      <span class="brand-right">RUPEESTORIES.SUBSTACK.COM</span>
-    </div>
-    <div class="hero-copy">
-      <h1>RetireState <span class="gold">Optimizer</span></h1>
-      <p>Compare retirement taxes, Social Security treatment, property taxes, insurance, healthcare, and cost-of-living differences before you choose your state.</p>
-      <div class="hero-pills">
-        <span class="hero-pill">🔒 No login</span>
-        <span class="hero-pill">🧪 Beta model</span>
-        <span class="hero-pill">Runs in your browser</span>
-      </div>
-      <p class="vintage" id="vintage"></p>
-    </div>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="topline"><span class="top-pill">R/RUPEESTORIES</span><span class="top-pill">RUPEESTORIES.SUBSTACK.COM</span></div>
+    <h1>RetireState Optimizer, Beta</h1>
+    <p class="subtitle">Pick the state first. Then model the withdrawal strategy. Compare state taxes, property tax, insurance, cost of living, Roth conversions, ACA exposure, RMDs, and long-term tax pressure.</p>
+    <p class="vintage" id="vintage"></p>
+    <div class="hero-cards"><span class="hero-card"><strong>Tab 1:</strong> State Optimizer</span><span class="hero-card"><strong>Tab 2:</strong> Withdrawal Strategy Engine</span><span class="hero-card"><strong>Beta:</strong> selected states only</span></div>
   </div>
 </header>
 
-<div class="wrap">
-
-  <div class="section no-print">
-    <h2><span class="n">1</span> Your Retirement Profile</h2>
-    <p class="hint">A sample profile is preloaded. Change anything and recalculate. All math runs in your browser — nothing is uploaded.</p>
-    <div class="panel">
-      <div class="formgrid" id="formgrid"></div>
-    </div>
-  </div>
-
-  <div class="section no-print">
-    <h2><span class="n">2</span> States to Compare</h2>
-    <p class="hint">Choose 2 to 4 beta states. Use a preset or pick your own.</p>
-    <div class="panel">
-      <div class="presets" id="presets"></div>
-      <div class="state-grid" id="stateGrid"></div>
-      <div class="sel-count" id="selCount"></div>
-      <div class="beta-note">
-        <strong>Selected beta states only.</strong> Beta includes PA, NJ, FL, TX, DE, NC, CA, NY, WA, NV, AZ, OR, and MD. More states will be added later.
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn btn-primary" id="btnCalc">Calculate Comparison</button>
-      <button class="btn btn-ghost" id="btnReset">Reset to Sample Profile</button>
-      <button class="btn btn-ghost" id="btnCopy">Copy Report</button>
-      <button class="btn btn-ghost" id="btnCsv">Export Summary as CSV</button>
-      <button class="btn btn-ghost" id="btnPrint">Print Report</button>
-    </div>
-  </div>
-
-  <div id="report" class="empty-state">
-    <h2>Your comparison report will appear here</h2>
-    <p>Enter your details above, pick your states, and press <strong>Calculate Comparison</strong>.</p>
-  </div>
-
-  <div class="disclaimer">
-    <strong>Disclaimer.</strong> This tool is for education and planning only. It is not tax, legal, or financial advice.
-    It compares <strong>state-level</strong> costs and includes a simplified FIRE snapshot. It does <strong>not</strong> replace a federal tax return, full retirement plan, ACA estimate, RMD plan, or estate plan. Portfolio returns, RMDs, ACA, home appreciation, and federal tax assumptions are simplified. Selected beta states use simplified tax assumptions. State rules can vary by age, income, filing status, and local jurisdiction. Each state carries a modeling confidence rating. Approximate 2025 tax-year rules, last reviewed May 2026.
-  </div>
+<div class="tabs no-print">
+  <button class="tab-btn active" data-tab="stateTab">State Optimizer</button>
+  <button class="tab-btn" data-tab="fireTab">Withdrawal Strategy Engine</button>
 </div>
 
+<div id="stateTab" class="tab-panel active"><div class="wrap">
+  <div class="section no-print"><h2><span class="n">1</span> Your Retirement Profile</h2><p class="hint">A sample v5 profile is preloaded. Change anything and recalculate. All math runs in your browser.</p><div class="panel"><div class="formgrid" id="formgrid"></div></div></div>
+  <div class="section no-print"><h2><span class="n">2</span> States to Compare</h2><p class="hint">Choose 2 to 4 beta states. Use a preset or pick your own.</p><div class="panel"><div class="presets" id="presets"></div><div class="state-grid" id="stateGrid"></div><div class="sel-count" id="selCount"></div><div class="beta-note"><strong>Selected beta states only.</strong> Beta includes PA, NJ, FL, TX, DE, NC, CA, NY, WA, NV, AZ, OR, and MD. More states can be added later.</div></div><div class="actions"><button class="btn btn-primary" id="btnCalc">Calculate Comparison</button><button class="btn btn-ghost" id="btnReset">Reset to v5 Sample</button><button class="btn btn-ghost" id="btnCopy">Copy Report</button><button class="btn btn-ghost" id="btnCsv">Export Summary as CSV</button><button class="btn btn-ghost" id="btnPrint">Print Report</button></div></div>
+  <div id="stateReport" class="empty-state"><h2>Your state comparison report will appear here</h2><p>Enter your details, pick states, and press <strong>Calculate Comparison</strong>.</p></div>
+  <div class="disclaimer"><strong>Disclaimer.</strong> This tool is for education and planning only. It is not tax, legal, or financial advice. It compares state-level costs and simplified strategy paths. Federal/state rules vary by age, income, filing status, and local jurisdiction. Approximate 2025 tax-year rules, last reviewed May 2026.</div>
+</div></div>
+
+<div id="fireTab" class="tab-panel"><div class="wrap">
+  <div class="section no-print"><h2><span class="n">A</span> Withdrawal Strategy Engine</h2><p class="hint">Uses the winning state from the State Optimizer by default. Models four rough paths: taxable-first, balanced, Roth conversion ladder, and ACA-optimized.</p><div class="panel"><div class="formgrid" id="fireFormgrid"></div><div class="assump"><strong>Selected planning state:</strong> <span id="fireSelectedState">Run State Optimizer first</span>. This tab is a directional engine, not a tax return or full financial plan.</div></div><div class="actions"><button class="btn btn-primary" id="btnRunFire">Run Strategy Engine</button><button class="btn btn-ghost" id="btnFireCsv">Export FIRE CSV</button><button class="btn btn-ghost" id="btnCopyFire">Copy FIRE Report</button></div></div>
+  <div id="fireReport" class="empty-state"><h2>Your withdrawal strategy report will appear here</h2><p>Run the State Optimizer first, then model withdrawal paths here.</p></div>
+</div></div>
 <div class="toast" id="toast"></div>
-
 <script>
-const DATA_VINTAGE = "May 2026";
-const BETA_STATES = ["PA","NJ","FL","TX","DE","NC","CA","NY","WA","NV","AZ","OR","MD"];
-
-const STATE_DATA = {
-  PA:{stateName:"Pennsylvania",abbreviation:"PA",hasStateIncomeTax:true,incomeTaxType:"flat",flatIncomeTaxRate:0.0307,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0149,averageSalesTaxRate:0.0634,costOfLivingIndex:95,healthcareCostIndex:101,insuranceRisk:"low",hasEstateTax:false,hasInheritanceTax:true,estimated:false,
-    notes:"Retirement-tax friendly: SS, pensions and IRA/401(k) distributions for eligible retirees are not state-taxed. Inheritance tax can matter; property tax is high."},
-  NJ:{stateName:"New Jersey",abbreviation:"NJ",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:20000,rate:.014},{upTo:50000,rate:.0175},{upTo:70000,rate:.0245},{upTo:80000,rate:.035},{upTo:150000,rate:.05525},{upTo:500000,rate:.0637},{upTo:1000000,rate:.0897},{upTo:Infinity,rate:.1075}],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0223,averageSalesTaxRate:0.0660,costOfLivingIndex:113,healthcareCostIndex:103,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:true,estimated:true,
-    notes:"Generous retirement-income exclusion for many retirees, but the highest property taxes in the nation and an inheritance tax."},
-  FL:{stateName:"Florida",abbreviation:"FL",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"not taxed",
-    effectivePropertyTaxRate:0.0080,averageSalesTaxRate:0.0700,costOfLivingIndex:103,healthcareCostIndex:105,insuranceRisk:"very high",hasEstateTax:false,hasInheritanceTax:false,estimated:false,
-    notes:"No state income tax of any kind and no estate/inheritance tax. The catch is property/home insurance, which is among the highest in the country."},
-  TX:{stateName:"Texas",abbreviation:"TX",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"not taxed",
-    effectivePropertyTaxRate:0.0160,averageSalesTaxRate:0.0820,costOfLivingIndex:93,healthcareCostIndex:102,insuranceRisk:"high",hasEstateTax:false,hasInheritanceTax:false,estimated:false,
-    notes:"No income tax and no estate/inheritance tax, but high property taxes and elevated insurance costs offset much of the income-tax savings."},
-  DE:{stateName:"Delaware",abbreviation:"DE",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:2000,rate:0},{upTo:5000,rate:.022},{upTo:10000,rate:.039},{upTo:20000,rate:.048},{upTo:25000,rate:.052},{upTo:60000,rate:.0555},{upTo:Infinity,rate:.066}],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0053,averageSalesTaxRate:0.0000,costOfLivingIndex:101,healthcareCostIndex:102,insuranceRisk:"low",hasEstateTax:false,hasInheritanceTax:false,estimated:true,
-    notes:"No sales tax, low property tax, a retirement-income exclusion, and no estate/inheritance tax. Often very retirement friendly."},
-  NC:{stateName:"North Carolina",abbreviation:"NC",hasStateIncomeTax:true,incomeTaxType:"flat",flatIncomeTaxRate:0.0425,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0073,averageSalesTaxRate:0.0700,costOfLivingIndex:96,healthcareCostIndex:99,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:false,estimated:false,
-    notes:"Flat income tax that applies to pensions and IRA/401(k) withdrawals, but SS is exempt and property tax/cost of living are moderate."},
-  CA:{stateName:"California",abbreviation:"CA",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:21512,rate:.01},{upTo:50998,rate:.02},{upTo:80490,rate:.04},{upTo:111732,rate:.06},{upTo:141212,rate:.08},{upTo:721318,rate:.093},{upTo:865574,rate:.103},{upTo:1442628,rate:.113},{upTo:Infinity,rate:.123}],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0071,averageSalesTaxRate:0.0885,costOfLivingIndex:140,healthcareCostIndex:110,insuranceRisk:"high",hasEstateTax:false,hasInheritanceTax:false,estimated:true,
-    notes:"SS is exempt, but pensions, IRA/401(k) and capital gains are taxed at high progressive rates, and cost of living is very high."},
-  NY:{stateName:"New York",abbreviation:"NY",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:17150,rate:.04},{upTo:23600,rate:.045},{upTo:27900,rate:.0525},{upTo:161550,rate:.055},{upTo:323200,rate:.06},{upTo:2155350,rate:.0685},{upTo:5000000,rate:.0965},{upTo:25000000,rate:.103},{upTo:Infinity,rate:.109}],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0140,averageSalesTaxRate:0.0853,costOfLivingIndex:125,healthcareCostIndex:108,insuranceRisk:"medium",hasEstateTax:true,hasInheritanceTax:false,estimated:true,
-    notes:"SS exempt and a pension/retirement exclusion for many older retirees, but income tax otherwise applies and there is an estate tax."},
-  WA:{stateName:"Washington",abbreviation:"WA",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"special",capGainsThreshold:270000,capGainsRate:0.07,
-    effectivePropertyTaxRate:0.0084,averageSalesTaxRate:0.0940,costOfLivingIndex:110,healthcareCostIndex:106,insuranceRisk:"low",hasEstateTax:true,hasInheritanceTax:false,estimated:false,
-    notes:"No tax on wages or retirement income, but a high sales tax, an estate tax, and a 7% tax on large long-term capital gains above an annual threshold."},
-  NV:{stateName:"Nevada",abbreviation:"NV",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"not taxed",
-    effectivePropertyTaxRate:0.0055,averageSalesTaxRate:0.0824,costOfLivingIndex:102,healthcareCostIndex:101,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:false,estimated:false,
-    notes:"No income tax, no estate/inheritance tax, and moderate property tax. Sales tax is on the higher side."},
-  AZ:{stateName:"Arizona",abbreviation:"AZ",hasStateIncomeTax:true,incomeTaxType:"flat",flatIncomeTaxRate:0.025,progressiveBrackets:[],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0060,averageSalesTaxRate:0.0840,costOfLivingIndex:108,healthcareCostIndex:100,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:false,estimated:false,
-    notes:"Low flat income tax, SS exempt, low property tax. A popular retirement state with a moderate overall tax profile."},
-  OR:{stateName:"Oregon",abbreviation:"OR",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:8100,rate:.0475},{upTo:20400,rate:.0675},{upTo:250000,rate:.0875},{upTo:Infinity,rate:.099}],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0086,averageSalesTaxRate:0.0000,costOfLivingIndex:113,healthcareCostIndex:104,insuranceRisk:"low",hasEstateTax:true,hasInheritanceTax:false,estimated:true,
-    notes:"No sales tax and SS exempt, but high income-tax rates that reach retirement withdrawals, plus an estate tax."},
-  MD:{stateName:"Maryland",abbreviation:"MD",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:1000,rate:.02},{upTo:2000,rate:.03},{upTo:3000,rate:.04},{upTo:150000,rate:.0475},{upTo:175000,rate:.05},{upTo:225000,rate:.0525},{upTo:300000,rate:.055},{upTo:Infinity,rate:.0575}],
-    socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",
-    effectivePropertyTaxRate:0.0101,averageSalesTaxRate:0.0600,costOfLivingIndex:116,healthcareCostIndex:104,insuranceRisk:"low",hasEstateTax:true,hasInheritanceTax:true,estimated:true,
-    notes:"SS exempt and a pension exclusion, but local piggyback income taxes apply and Maryland is the only state with both an estate and an inheritance tax."}
+const DATA_VINTAGE="May 2026";
+const BETA_STATES=["PA","NJ","FL","TX","DE","NC","CA","NY","WA","NV","AZ","OR","MD"];
+const STATE_DATA={
+PA:{stateName:"Pennsylvania",abbreviation:"PA",hasStateIncomeTax:true,incomeTaxType:"flat",flatIncomeTaxRate:.0307,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0149,averageSalesTaxRate:.0634,costOfLivingIndex:95,healthcareCostIndex:101,insuranceRisk:"low",hasEstateTax:false,hasInheritanceTax:true,estimated:false,notes:"Retirement-tax friendly, but inheritance tax can matter."},
+NJ:{stateName:"New Jersey",abbreviation:"NJ",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:20000,rate:.014},{upTo:50000,rate:.0175},{upTo:70000,rate:.0245},{upTo:80000,rate:.035},{upTo:150000,rate:.05525},{upTo:500000,rate:.0637},{upTo:1000000,rate:.0897},{upTo:Infinity,rate:.1075}],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0223,averageSalesTaxRate:.066,costOfLivingIndex:113,healthcareCostIndex:103,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:true,estimated:true,notes:"High property tax and inheritance tax."},
+FL:{stateName:"Florida",abbreviation:"FL",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"not taxed",effectivePropertyTaxRate:.008,averageSalesTaxRate:.07,costOfLivingIndex:103,healthcareCostIndex:105,insuranceRisk:"very high",hasEstateTax:false,hasInheritanceTax:false,estimated:false,notes:"No state income tax, but high insurance risk."},
+TX:{stateName:"Texas",abbreviation:"TX",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"not taxed",effectivePropertyTaxRate:.016,averageSalesTaxRate:.082,costOfLivingIndex:93,healthcareCostIndex:102,insuranceRisk:"high",hasEstateTax:false,hasInheritanceTax:false,estimated:false,notes:"No income tax, but high property tax."},
+DE:{stateName:"Delaware",abbreviation:"DE",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:2000,rate:0},{upTo:5000,rate:.022},{upTo:10000,rate:.039},{upTo:20000,rate:.048},{upTo:25000,rate:.052},{upTo:60000,rate:.0555},{upTo:Infinity,rate:.066}],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0053,averageSalesTaxRate:0,costOfLivingIndex:101,healthcareCostIndex:102,insuranceRisk:"low",hasEstateTax:false,hasInheritanceTax:false,estimated:true,notes:"No sales tax and low property tax."},
+NC:{stateName:"North Carolina",abbreviation:"NC",hasStateIncomeTax:true,incomeTaxType:"flat",flatIncomeTaxRate:.0425,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0073,averageSalesTaxRate:.07,costOfLivingIndex:96,healthcareCostIndex:99,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:false,estimated:false,notes:"Flat tax applies to retirement withdrawals."},
+CA:{stateName:"California",abbreviation:"CA",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:21512,rate:.01},{upTo:50998,rate:.02},{upTo:80490,rate:.04},{upTo:111732,rate:.06},{upTo:141212,rate:.08},{upTo:721318,rate:.093},{upTo:865574,rate:.103},{upTo:1442628,rate:.113},{upTo:Infinity,rate:.123}],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0071,averageSalesTaxRate:.0885,costOfLivingIndex:140,healthcareCostIndex:110,insuranceRisk:"high",hasEstateTax:false,hasInheritanceTax:false,estimated:true,notes:"High income tax and cost of living."},
+NY:{stateName:"New York",abbreviation:"NY",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:17150,rate:.04},{upTo:23600,rate:.045},{upTo:27900,rate:.0525},{upTo:161550,rate:.055},{upTo:323200,rate:.06},{upTo:2155350,rate:.0685},{upTo:5000000,rate:.0965},{upTo:25000000,rate:.103},{upTo:Infinity,rate:.109}],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.014,averageSalesTaxRate:.0853,costOfLivingIndex:125,healthcareCostIndex:108,insuranceRisk:"medium",hasEstateTax:true,hasInheritanceTax:false,estimated:true,notes:"Estate tax and high cost of living."},
+WA:{stateName:"Washington",abbreviation:"WA",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"special",capGainsThreshold:270000,capGainsRate:.07,effectivePropertyTaxRate:.0084,averageSalesTaxRate:.094,costOfLivingIndex:110,healthcareCostIndex:106,insuranceRisk:"low",hasEstateTax:true,hasInheritanceTax:false,estimated:false,notes:"No regular income tax, but sales tax, estate tax, and special capital gains rules."},
+NV:{stateName:"Nevada",abbreviation:"NV",hasStateIncomeTax:false,incomeTaxType:"none",flatIncomeTaxRate:0,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"not taxed",ira401kTaxTreatment:"not taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"not taxed",effectivePropertyTaxRate:.0055,averageSalesTaxRate:.0824,costOfLivingIndex:102,healthcareCostIndex:101,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:false,estimated:false,notes:"No income tax and no estate tax."},
+AZ:{stateName:"Arizona",abbreviation:"AZ",hasStateIncomeTax:true,incomeTaxType:"flat",flatIncomeTaxRate:.025,progressiveBrackets:[],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.006,averageSalesTaxRate:.084,costOfLivingIndex:108,healthcareCostIndex:100,insuranceRisk:"medium",hasEstateTax:false,hasInheritanceTax:false,estimated:false,notes:"Low flat tax, SS exempt."},
+OR:{stateName:"Oregon",abbreviation:"OR",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:8100,rate:.0475},{upTo:20400,rate:.0675},{upTo:250000,rate:.0875},{upTo:Infinity,rate:.099}],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"taxed",ira401kTaxTreatment:"taxed",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0086,averageSalesTaxRate:0,costOfLivingIndex:113,healthcareCostIndex:104,insuranceRisk:"low",hasEstateTax:true,hasInheritanceTax:false,estimated:true,notes:"No sales tax, but high income tax and estate tax."},
+MD:{stateName:"Maryland",abbreviation:"MD",hasStateIncomeTax:true,incomeTaxType:"progressive",flatIncomeTaxRate:0,progressiveBrackets:[{upTo:1000,rate:.02},{upTo:2000,rate:.03},{upTo:3000,rate:.04},{upTo:150000,rate:.0475},{upTo:175000,rate:.05},{upTo:225000,rate:.0525},{upTo:300000,rate:.055},{upTo:Infinity,rate:.0575}],socialSecurityTaxTreatment:"not taxed",pensionTaxTreatment:"partially excluded",ira401kTaxTreatment:"partially excluded",rothTaxTreatment:"not taxed",capitalGainsTaxTreatment:"taxed as income",effectivePropertyTaxRate:.0101,averageSalesTaxRate:.06,costOfLivingIndex:116,healthcareCostIndex:104,insuranceRisk:"low",hasEstateTax:true,hasInheritanceTax:true,estimated:true,notes:"Local piggyback tax not modeled."}
 };
+STATE_DATA.PA.localTaxNote="Pennsylvania local earned income tax can apply to wages, but usually not retirement withdrawals.";STATE_DATA.NY.localTaxNote="NYC and Yonkers taxes are not modeled.";STATE_DATA.MD.localTaxNote="Maryland county piggyback taxes are not modeled and can raise the true cost.";
+const fmtUSD=n=>{if(n===null||n===undefined||isNaN(n))return"$0";const neg=n<0,v=Math.round(Math.abs(n));return(neg?"-$":"$")+v.toLocaleString("en-US")};
+const fmtPct=(r,d=2)=>(r*100).toFixed(d).replace(/\.?0+$/,'')+"%"; const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function inclusionFraction(t){switch(t){case"not taxed":return 0;case"partially excluded":case"partially taxed":return .5;case"taxed":case"taxed as income":return 1;default:return 0}}
+const FILING_FACTOR={single:.5,mfs:.5,hoh:.6,mfj:1};
+function calculateAnnualIncome(p){return p.ssIncome+p.pension+p.iraWithdrawals+p.rothWithdrawals+p.dividends+p.ltcg+(p.otherTaxableIncome||0)}
+function effectiveSSForState(p){return p.useSSTiming && p.retireAge<p.ssClaimAge?0:p.ssIncome}
+function calculateStateTaxableIncome(p,s){if(!s.hasStateIncomeTax)return 0;let t=0;t+=inclusionFraction(s.socialSecurityTaxTreatment)*effectiveSSForState(p);t+=inclusionFraction(s.pensionTaxTreatment)*p.pension;t+=inclusionFraction(s.ira401kTaxTreatment)*p.iraWithdrawals;t+=(p.otherTaxableIncome||0);t+=p.dividends;if(s.capitalGainsTaxTreatment==="taxed as income")t+=p.ltcg;else if(s.capitalGainsTaxTreatment==="partially taxed")t+=.5*p.ltcg;return Math.max(0,t)}
+function getFilingFactor(s,filing){if(!filing||filing==="mfj")return 1;if(s&&s.abbreviation==="DE")return 1;return FILING_FACTOR[filing]||1}function calculateStateIncomeTax(taxable,s,filing){if(!s.hasStateIncomeTax)return 0;if(s.incomeTaxType==="flat")return taxable*s.flatIncomeTaxRate;if(s.incomeTaxType==="progressive"&&s.progressiveBrackets.length){const f=getFilingFactor(s,filing);let tax=0,lower=0;for(const b of s.progressiveBrackets){const upper=b.upTo===Infinity?Infinity:b.upTo*f;if(taxable>lower){const slice=Math.min(taxable,upper)-lower;if(slice>0)tax+=slice*b.rate}lower=upper;if(taxable<=upper)break}return tax}return taxable*(s.flatIncomeTaxRate||0)}
+function calculateSpecialCapGainsTax(p,s){if(s.capitalGainsTaxTreatment==="special"&&s.capGainsThreshold!=null){const gains=Math.max(0,p.ltcg||0);if(s.abbreviation==="WA"){const tier1=Math.max(0,Math.min(gains,1000000)-s.capGainsThreshold);const tier2=Math.max(0,gains-1000000);return tier1*0.07+tier2*0.099}return Math.max(0,gains-s.capGainsThreshold)*(s.capGainsRate||0)}if(s.abbreviation==="CA"){const income=(p.dividends||0)+(p.ltcg||0)+(p.iraWithdrawals||0)+(p.otherIncome||0)+(p.airbnbIncome||0);return Math.max(0,income-1000000)*0.01}return 0}
+function calculatePropertyTax(p,s){return p.ownership==="own"?Math.max(0,p.homeValue)*s.effectivePropertyTaxRate:0}const SALES_TAXABLE_SHARE=.55;function calculateSalesTax(p,s){return Math.max(0,p.spending)*SALES_TAXABLE_SHARE*s.averageSalesTaxRate}function calculateHousingCost(p){return p.ownership==="rent"?Math.max(0,p.rent||0):Math.max(0,p.mortgage||0)}const INSURANCE_DEFAULTS={low:2000,medium:3500,high:6000,"very high":12000};function calculateInsuranceCost(p,s){if(p.ownership!=="own")return 0;if(p.insurance&&p.insurance>0)return p.insurance;return INSURANCE_DEFAULTS[s.insuranceRisk]||3500}function defaultHealthcare(p){return(p.filing==="mfj"||p.filing==="mfs")?16000:8000}function healthcareBase(p){return p.healthcare&&p.healthcare>0?p.healthcare:defaultHealthcare(p)}function calculateHealthcareAdjustment(p,s){return healthcareBase(p)*((s.healthcareCostIndex-100)/100)}function calculateCostOfLivingAdjustment(p,s){const base=Math.max(0,Math.max(0,p.spending)-calculateHousingCost(p)-healthcareBase(p)-calculateInsuranceCost(p,s));return base*((s.costOfLivingIndex-100)/100)}
+function calculateAnnualStateImpact(p,s){const taxable=calculateStateTaxableIncome(p,s),incomeTax=calculateStateIncomeTax(taxable,s,p.filing)+calculateSpecialCapGainsTax(p,s),propertyTax=calculatePropertyTax(p,s),salesTax=calculateSalesTax(p,s),ins=calculateInsuranceCost(p,s),hc=calculateHealthcareAdjustment(p,s),col=calculateCostOfLivingAdjustment(p,s),requiredCosts=incomeTax+propertyTax+salesTax+ins,relativeAdj=col+hc,impact=requiredCosts+relativeAdj;return{incomeTax,propertyTax,salesTax,ins,hc,col,taxable,requiredCosts,relativeAdj,impact,housing:calculateHousingCost(p)}}
+function calculateCumulativeImpact(p,s,horizon,obj){const annual=(obj||calculateAnnualStateImpact(p,s)).impact,n=Math.max(1,horizon),i=Math.max(0,(p.inflation||0))/100,c=i>0?annual*(Math.pow(1+i,n)-1)/i:annual*n;return{cumulativeImpact:c,projected:p.netWorth-c}}
+function stateConfidence(s){if(s.abbreviation==="WA")return"Medium";if(!s.hasStateIncomeTax)return"High";const partial=[s.socialSecurityTaxTreatment,s.pensionTaxTreatment,s.ira401kTaxTreatment,s.capitalGainsTaxTreatment].some(t=>t==="partially excluded"||t==="partially taxed");if(s.incomeTaxType==="progressive"&&partial)return"Low";return"Medium"}
+function rankStates(p,selected){const rows=selected.map(abbr=>{const s=STATE_DATA[abbr],d=calculateAnnualStateImpact(p,s),nw=calculateCumulativeImpact(p,s,Math.max(1,p.horizon),d);return{abbr,s,...d,confidence:stateConfidence(s),cumulativeImpact:nw.cumulativeImpact,projected:nw.projected}});rows.sort((a,b)=>b.projected-a.projected||a.impact-b.impact||a.s.costOfLivingIndex-b.s.costOfLivingIndex);rows.forEach((r,i)=>r.rank=i+1);return rows}
+function verdictFor(p,r,rows){const l=[],s=r.s;if(r.rank===1)l.push({t:"Best overall fit",c:"v-good"});if(!s.hasStateIncomeTax)l.push({t:"Strong tax state",c:"v-good"});if(s.hasStateIncomeTax&&s.ira401kTaxTreatment==="not taxed"&&s.pensionTaxTreatment==="not taxed")l.push({t:"Retirement income friendly",c:"v-good"});if(p.ownership==="own"&&r.propertyTax>=12000)l.push({t:"High property tax",c:"v-warn"});if(r.col>=p.spending*.08)l.push({t:"High cost-of-living burden",c:"v-warn"});if(s.hasEstateTax)l.push({t:"Estate tax risk",c:"v-warn"});if(s.hasInheritanceTax)l.push({t:"Inheritance tax risk",c:"v-warn"});if(r.rank===rows.length&&rows.length>1)l.push({t:"Expensive for this profile",c:"v-bad"});if(!l.length)l.push({t:"Balanced profile",c:"v-neutral"});return l.slice(0,3)}
+function ssDisplay(t){if(t==="not taxed")return['no','No'];if(t==="taxed")return['yes','Yes'];return['partial','Partial']}function incDisplay(t){if(t==="not taxed")return['no','No'];if(t==="taxed"||t==="taxed as income")return['yes','Yes'];return['partial','Partial']}function cgDisplay(t){if(t==="not taxed")return['no','No'];if(t==="taxed as income")return['yes','As income'];if(t==="partially taxed")return['partial','Partial'];if(t==="special")return['partial','Large gains'];return['partial','—']}
+function generateRedFlags(p,s,r){const flags=[],push=(sev,title,text)=>flags.push({sev,title,text});if(inclusionFraction(s.ira401kTaxTreatment)>=1&&p.iraWithdrawals>0)push("high","Taxes IRA/401(k) withdrawals",`Your ${fmtUSD(p.iraWithdrawals)}/yr traditional withdrawals are fully taxable here.`);else if(inclusionFraction(s.ira401kTaxTreatment)>0&&p.iraWithdrawals>0)push("med","Partially taxes IRA/401(k) withdrawals",`Part of your ${fmtUSD(p.iraWithdrawals)}/yr withdrawals may be taxable.`);if(p.ownership==="own"&&r.propertyTax>=12000)push("high","High property tax",`Your home implies about ${fmtUSD(r.propertyTax)}/yr in property tax.`);if(s.costOfLivingIndex>=115)push("high","High cost of living",`Cost of living runs roughly ${s.costOfLivingIndex-100}% above baseline.`);else if(s.costOfLivingIndex>=108)push("med","Above-average cost of living",`Cost of living is about ${s.costOfLivingIndex-100}% above baseline.`);if(p.ownership==="own"&&(s.insuranceRisk==="high"||s.insuranceRisk==="very high"))push(s.insuranceRisk==="very high"?"high":"med","High home insurance risk",`${s.stateName} carries ${s.insuranceRisk} property-insurance risk.`);if(s.hasEstateTax)push("med","Estate tax risk",`${s.stateName} levies a state estate tax.`);if(s.hasInheritanceTax)push("med","Inheritance tax risk",`${s.stateName} has an inheritance tax.`);if(s.localTaxNote)push("med","Local income tax may apply",s.localTaxNote);if(s.abbreviation==="MD")push("high","Maryland local income taxes not included","Maryland local income taxes are not included. Actual income tax may be higher.");return flags}
+function netWorthBand(nw){if(nw<1000000)return{label:"Under $1,000,000",focus:"cost of living, rent, property tax, and healthcare costs"};if(nw<2000000)return{label:"$1,000,000 – $2,000,000",focus:"state income tax, property tax, and withdrawal strategy"};if(nw<5000000)return{label:"$2,000,000 – $5,000,000",focus:"IRA/401(k) withdrawal taxation, RMD exposure, property tax, ACA/IRMAA awareness, and estate or inheritance tax risk"};return{label:"Above $5,000,000",focus:"estate tax, inheritance tax, capital gains, large IRA balances, property tax, and multi-state planning risk"}}
+function narrativeTakeaway(p,rows){return rows.map(r=>{const s=r.s;if(!s.hasStateIncomeTax){let t=`${s.stateName} wins on income tax because it does not tax wages or retirement income`;if(r.propertyTax>=12000)t+=`, but property tax runs about ${fmtUSD(r.propertyTax)}/yr`;else if(s.insuranceRisk==="very high"||s.insuranceRisk==="high")t+=`, though higher home-insurance risk offsets some of that benefit`;return t+"."}if(s.ira401kTaxTreatment==="not taxed"&&s.pensionTaxTreatment==="not taxed")return`${s.stateName} may be surprisingly strong for retirees because many retirement distributions are not taxed at the state level.`;if(s.ira401kTaxTreatment==="taxed")return`${s.stateName} can carry higher annual state impact because IRA/401(k) withdrawals are taxed.`;return`${s.stateName} sits in the middle because retirement-income exclusions soften some income tax.`}).join(" ")}
+const STATE_FIELDS=[{group:"Household"},{k:"filing",label:"Filing status",type:"select",opts:[["single","Single"],["mfj","Married filing jointly"],["mfs","Married filing separately"],["hoh","Head of household"]]},{k:"age",label:"Current age",type:"int"},{k:"retireAge",label:"Retirement age",type:"int"},{k:"ssClaimAge",label:"SS claim age",type:"int"},{k:"useSSTiming",label:"Use Social Security only after claim age",type:"checkbox"},{k:"horizon",label:"Planning horizon (years)",type:"int"},{k:"inflation",label:"Annual inflation on costs (%)",type:"pct"},{group:"Balances"},{k:"netWorth",label:"Total net worth",type:"money"},{k:"brokerage",label:"Taxable brokerage balance",type:"money"},{k:"iraBalance",label:"Traditional 401(k)/IRA balance",type:"money"},{k:"rothBalance",label:"Roth IRA / Roth 401(k) balance",type:"money"},{k:"hsaBalance",label:"HSA balance",type:"money"},{group:"Annual income"},{k:"ssIncome",label:"Social Security income",type:"money"},{k:"pension",label:"Pension income",type:"money"},{k:"iraWithdrawals",label:"Traditional IRA/401(k) withdrawals",type:"money"},{k:"rothWithdrawals",label:"Roth withdrawals",type:"money"},{k:"dividends",label:"Brokerage dividends & interest",type:"money"},{k:"ltcg",label:"Long-term capital gains",type:"money"},{k:"otherTaxableIncome",label:"Other taxable income",type:"money"},{group:"Spending & housing"},{k:"spending",label:"Annual retirement spending need",type:"money"},{k:"ownership",label:"Own or rent",type:"select",opts:[["own","Own"],["rent","Rent"]]},{k:"homeValue",label:"Home value",type:"money",showIf:p=>p.ownership==="own"},{k:"rent",label:"Annual rent",type:"money",showIf:p=>p.ownership==="rent"},{k:"mortgage",label:"Annual mortgage payment",type:"money",showIf:p=>p.ownership==="own"},{group:"Optional costs"},{k:"healthcare",label:"Annual healthcare premium",type:"money"},{k:"insurance",label:"Annual property insurance",type:"money",showIf:p=>p.ownership==="own"}];
+const SAMPLE={filing:"mfj",age:45,retireAge:47,ssClaimAge:67,useSSTiming:true,horizon:40,inflation:5,netWorth:7000000,brokerage:3230000,iraBalance:1600000,rothBalance:1100000,hsaBalance:70000,ssIncome:72000,pension:0,iraWithdrawals:0,rothWithdrawals:0,dividends:48450,ltcg:25840,otherTaxableIncome:63200,spending:100000,ownership:"own",homeValue:1000000,rent:0,mortgage:0,healthcare:16000,insurance:0};
+const PRESETS=[{label:"PA · NJ · FL · TX",states:["PA","NJ","FL","TX"]},{label:"CA · WA",states:["CA","WA"]},{label:"CA · TX · FL · NV",states:["CA","TX","FL","NV"]},{label:"NY · FL · NC · PA",states:["NY","FL","NC","PA"]},{label:"WA · OR · AZ · NV",states:["WA","OR","AZ","NV"]},{label:"NJ · DE · PA · MD",states:["NJ","DE","PA","MD"]}];
+let profile={...SAMPLE},selectedStates=["PA","NJ","FL","TX"],lastRows=null;
+function parseMoney(v){if(v===""||v==null)return 0;return Math.max(0,Number(String(v).replace(/[^0-9.\-]/g,""))||0)}function parseIntSafe(v,d=0){const n=parseInt(v,10);return isNaN(n)?d:n}function parseFloatSafe(v,d=0){const n=parseFloat(v);return isNaN(n)?d:n}
+function buildForm(fields,gridId,obj,onChange){const grid=document.getElementById(gridId);grid.innerHTML="";fields.forEach(f=>{if(f.group){const d=document.createElement("div");d.className="fieldgroup-title";d.textContent=f.group;grid.appendChild(d);return}const wrap=document.createElement("label");wrap.className="f";wrap.dataset.key=f.k;if(f.showIf&&!f.showIf(obj))wrap.classList.add("hidden");const lbl=document.createElement("div");lbl.className="lbl";lbl.textContent=f.label;wrap.appendChild(lbl);let input;if(f.type==="select"){input=document.createElement("select");f.opts.forEach(([val,txt])=>{const o=document.createElement("option");o.value=val;o.textContent=txt;if(obj[f.k]===val)o.selected=true;input.appendChild(o)})}else if(f.type==="checkbox"){input=document.createElement("input");input.type="checkbox";input.checked=!!obj[f.k]}else{input=document.createElement("input");input.type="text";input.className="num-in";input.value=obj[f.k]??"";input.inputMode="decimal"}input.dataset.key=f.k;input.addEventListener("input",e=>onChange(e,fields,obj,gridId));input.addEventListener("change",e=>onChange(e,fields,obj,gridId));wrap.appendChild(input);if(f.k==="mortgage"||f.k==="rent"){const note=document.createElement("div");note.className="input-note";note.textContent="Housing cost is shown for context. It is not used to rank states unless state-specific assumptions are added later.";wrap.appendChild(note)}grid.appendChild(wrap)})}
+function onGenericFieldChange(e,fields,obj,gridId){const k=e.target.dataset.key,def=fields.find(x=>x.k===k);if(!def)return;if(def.type==="select")obj[k]=e.target.value;else if(def.type==="checkbox")obj[k]=e.target.checked;else if(def.type==="int")obj[k]=parseIntSafe(e.target.value,0);else if(def.type==="pct")obj[k]=parseFloatSafe(e.target.value,0);else obj[k]=parseMoney(e.target.value);document.querySelectorAll(`#${gridId} label.f`).forEach(l=>{const kk=l.dataset.key,fd=fields.find(x=>x.k===kk);if(fd&&fd.showIf)l.classList.toggle("hidden",!fd.showIf(obj))})}
+function buildStateForm(){buildForm(STATE_FIELDS,"formgrid",profile,onGenericFieldChange)}function buildPresets(){const box=document.getElementById("presets");box.innerHTML="";PRESETS.forEach(p=>{const b=document.createElement("button");b.className="preset-btn";b.type="button";b.textContent=p.label;b.onclick=()=>{selectedStates=[...p.states];buildStateGrid();toast("Preset applied")};box.appendChild(b)})}function buildStateGrid(){const box=document.getElementById("stateGrid");box.innerHTML="";BETA_STATES.forEach(abbr=>{const s=STATE_DATA[abbr],lab=document.createElement("label");lab.className="state-chip"+(selectedStates.includes(abbr)?" sel":"");const cb=document.createElement("input");cb.type="checkbox";cb.checked=selectedStates.includes(abbr);cb.onchange=()=>{if(cb.checked){if(selectedStates.length>=4){cb.checked=false;toast("Choose up to 4 states.");return}selectedStates.push(abbr)}else selectedStates=selectedStates.filter(x=>x!==abbr);buildStateGrid()};const tx=document.createElement("span");tx.textContent=`${abbr} — ${s.stateName}`;lab.appendChild(cb);lab.appendChild(tx);box.appendChild(lab)});const c=document.getElementById("selCount");c.textContent=`${selectedStates.length} state${selectedStates.length===1?"":"s"} selected`;c.className="sel-count"+((selectedStates.length<2||selectedStates.length>4)?" bad":"")}
+function signed(n){return n<0?`-${fmtUSD(Math.abs(n))}`:fmtUSD(n)}function numCell(n){return`<td class="cell-num ${n<0?'neg':''}">${signed(n)}</td>`}
+function generateRecommendation(p,rows){const best=rows[0],worst=rows[rows.length-1],horizon=Math.max(1,p.horizon),annualDiff=worst.impact-best.impact,horizonDiff=worst.cumulativeImpact-best.cumulativeImpact,band=netWorthBand(p.netWorth),pureTax=[...rows].sort((a,b)=>a.incomeTax-b.incomeTax)[0],lowCost=[...rows].sort((a,b)=>(a.col+a.salesTax+a.hc)-(b.col+b.salesTax+b.hc))[0],hiddenCost=[...rows].sort((a,b)=>(b.propertyTax+b.ins+b.salesTax)-(a.propertyTax+a.ins+a.salesTax))[0];let html=`<span class="band">Net-worth band: ${band.label}</span>`;html+=`<p>Across the states you compared over a ${horizon}-year horizon, <strong>${best.s.stateName}</strong> comes out ahead, leaving an estimated <strong>${fmtUSD(best.projected)}</strong> versus <strong>${fmtUSD(worst.projected)}</strong> in ${worst.s.stateName}, a gap of about <strong>${fmtUSD(horizonDiff)}</strong>, or roughly <strong>${fmtUSD(annualDiff)}</strong> per year.</p>`;html+=`<p>At your net worth, the factors that matter most are ${band.focus}.</p><h3>How the states stack up</h3><ul>`;html+=`<li><b>Best overall:</b> ${best.s.stateName}.</li><li><b>Best pure income-tax state:</b> ${pureTax.s.stateName}, at about ${fmtUSD(pureTax.incomeTax)}/yr of modeled state income tax.</li><li><b>Lowest day-to-day cost:</b> ${lowCost.s.stateName}, based on cost of living, sales tax, and healthcare.</li><li><b>Highest hidden-cost state:</b> ${hiddenCost.s.stateName}, where property tax, insurance, and sales tax add about ${fmtUSD(hiddenCost.propertyTax+hiddenCost.ins+hiddenCost.salesTax)}/yr.</li></ul><h3>Plain-English takeaway</h3><p>${narrativeTakeaway(p,rows)}</p>`;if(p.useSSTiming&&p.retireAge<p.ssClaimAge)html+=`<p><strong>Social Security timing:</strong> Social Security is excluded from state ranking until claim age ${p.ssClaimAge}. The annual SS field still feeds the strategy tab at claim age.</p>`;return html}
+function calculate(){if(selectedStates.length<2||selectedStates.length>4){toast("Choose 2 to 4 beta states.");return}lastRows=rankStates(profile,selectedStates);renderStateReport(profile,lastRows);syncWinningStateToFireEngine()}
+function renderStateReport(p,rows){const rep=document.getElementById("stateReport");rep.className="";const horizon=Math.max(1,p.horizon),best=rows[0],worst=rows[rows.length-1],housing=calculateHousingCost(p);let h=`<div class="section"><h2><span class="n">3</span> Overview</h2><div class="cards"><div class="card accent-good"><div class="k">Best state</div><div class="v">${esc(best.s.stateName)}</div><div class="sub">${fmtUSD(best.impact)}/yr annual state impact</div></div><div class="card accent-bad"><div class="k">Most expensive</div><div class="v">${esc(worst.s.stateName)}</div><div class="sub">${fmtUSD(worst.impact)}/yr annual state impact</div></div><div class="card accent-gold"><div class="k">Annual spread</div><div class="v">${fmtUSD(worst.impact-best.impact)}</div><div class="sub">Difference between highest and lowest impact</div></div><div class="card accent-ink"><div class="k">Cumulative spread</div><div class="v">${fmtUSD(worst.cumulativeImpact-best.cumulativeImpact)}</div><div class="sub">Inflated annually</div></div></div></div>`;
+h+=`<div class="section"><h2><span class="n">4</span> State Ranking</h2><p class="hint">Ranked by State-Adjusted Net Worth Estimate after annual state impact, compounded at ${p.inflation||0}%/yr over ${horizon} years.</p><div class="tablewrap"><table><thead><tr><th class="left">Rank</th><th class="left">State</th><th class="left">Modeling Confidence</th><th>Income Tax</th><th>Property Tax</th><th>Sales Tax</th><th>Insurance</th><th>COL Adj.</th><th>Healthcare Adj.</th><th class="left">Estate/Inh.</th><th>Annual State Impact</th><th>Cumulative Impact</th><th>State-Adjusted Net Worth</th><th class="left">Verdict</th></tr></thead><tbody>`;rows.forEach(r=>{const rb=r.rank===1?"rank-1":(r.rank===rows.length?"rank-last":"rank-mid"),est=(r.s.hasEstateTax?"Estate":"")+(r.s.hasEstateTax&&r.s.hasInheritanceTax?" + ":"")+(r.s.hasInheritanceTax?"Inherit.":""),verds=verdictFor(p,r,rows).map(v=>`<span class="verdict ${v.c}">${v.t}</span>`).join(" ");h+=`<tr><td class="left"><span class="rankbadge ${rb}">${r.rank}</span></td><td class="left statecell">${esc(r.s.stateName)}<span class="abbr">${r.s.abbreviation}</span>${r.s.estimated?'<span class="est-tag">EST</span>':''}</td><td class="left"><span class="conf conf-${r.confidence}">${r.confidence}</span></td><td class="cell-num">${fmtUSD(r.incomeTax)}</td><td class="cell-num">${fmtUSD(r.propertyTax)}</td><td class="cell-num">${fmtUSD(r.salesTax)}</td><td class="cell-num">${fmtUSD(r.ins)}</td>${numCell(r.col)}${numCell(r.hc)}<td class="left">${est?`<span class="yes">${est}</span>`:`<span class="no">None</span>`}</td><td class="cell-num ${r.impact<0?'neg':''}"><strong>${signed(r.impact)}</strong></td><td class="cell-num ${r.cumulativeImpact<0?'neg':''}">${signed(r.cumulativeImpact)}</td><td class="cell-num"><strong>${fmtUSD(r.projected)}</strong></td><td class="left">${verds}</td></tr>`});h+=`</tbody></table></div><div class="assump"><strong>How to read this:</strong> Housing cost is shown for context and not used to rank states unless state-specific rent or home-price assumptions are added later. ${housing>0?`Your annual housing cost is ${fmtUSD(housing)}.`:''}</div></div>`;
+h+=`<div class="section"><h2><span class="n">5</span> Tax Treatment by State</h2><div class="tablewrap"><table><thead><tr><th class="left">State</th><th class="left">Confidence</th><th class="left">Social Security</th><th class="left">Pension</th><th class="left">IRA/401(k)</th><th class="left">Roth</th><th class="left">Interest/Div.</th><th class="left">LT Cap Gains</th><th class="left">Estate</th><th class="left">Inheritance</th></tr></thead><tbody>`;rows.forEach(r=>{const s=r.s,ss=ssDisplay(s.socialSecurityTaxTreatment),pen=incDisplay(s.pensionTaxTreatment),ira=incDisplay(s.ira401kTaxTreatment),idv=s.hasStateIncomeTax?['yes','Yes']:['no','No'],cg=cgDisplay(s.capitalGainsTaxTreatment),cell=d=>`<td class="left"><span class="${d[0]}">${d[1]}</span></td>`;h+=`<tr><td class="left statecell">${esc(s.stateName)}<span class="abbr">${s.abbreviation}</span></td><td class="left"><span class="conf conf-${r.confidence}">${r.confidence}</span></td>${cell(ss)}${cell(pen)}${cell(ira)}<td class="left"><span class="no">No</span></td>${cell(idv)}${cell(cg)}<td class="left"><span class="${s.hasEstateTax?'yes':'no'}">${s.hasEstateTax?'Yes':'No'}</span></td><td class="left"><span class="${s.hasInheritanceTax?'yes':'no'}">${s.hasInheritanceTax?'Yes':'No'}</span></td></tr>`});h+=`</tbody></table></div></div>`;
+h+=`<div class="section no-print"><h2><span class="n">6</span> Red Flags by State</h2><div class="flagcols">`;rows.forEach(r=>{const flags=generateRedFlags(p,r.s,r);h+=`<div class="flagcard"><h3>${esc(r.s.stateName)} <span class="score">${flags.length} flag${flags.length===1?"":"s"}</span></h3>`;if(!flags.length)h+=`<div class="noflags">● No major red flags for this profile.</div>`;else flags.forEach(f=>{h+=`<div class="flag sev-${f.sev}"><span class="dot"></span><span><span class="ft">${esc(f.title)}</span>${esc(f.text)}</span></div>`});h+=`</div>`});h+=`</div></div><div class="section"><h2><span class="n">7</span> Recommendation</h2><div class="reco">${generateRecommendation(p,rows)}</div></div>`;rep.innerHTML=h}
+function exportCSV(){if(!lastRows){toast("Calculate first.");return}const housing=calculateHousingCost(profile),head=["Rank","State","Modeling Confidence","State Income Tax","Property Tax","Sales Tax","Insurance","Cost-of-Living Adjustment","Healthcare Adjustment","Annual State Impact","Cumulative State Impact","State-Adjusted Net Worth","Annual Housing Cost","Verdict"],esc2=v=>{v=String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v},lines=[head.map(esc2).join(",")];lastRows.forEach(r=>lines.push([r.rank,r.s.stateName,r.confidence,Math.round(r.incomeTax),Math.round(r.propertyTax),Math.round(r.salesTax),Math.round(r.ins),Math.round(r.col),Math.round(r.hc),Math.round(r.impact),Math.round(r.cumulativeImpact),Math.round(r.projected),Math.round(housing),verdictFor(profile,r,lastRows).map(v=>v.t).join("; ")].map(esc2).join(",")));downloadCSV(lines.join("\n"),"retirestate-optimizer-state.csv")}
+function copyText(text){if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(text).then(()=>toast("Report copied."),()=>fallbackCopy(text));else fallbackCopy(text)}function fallbackCopy(text){const ta=document.createElement("textarea");ta.value=text;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.left="-9999px";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Report copied.")}catch(e){toast("Copy failed. Select and copy manually.")}document.body.removeChild(ta)}
+function printReport(){window.print()}function downloadCSV(text,name){const blob=new Blob([text],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);toast("CSV exported.")}let toastTimer;function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2400)}
+function reset(){profile={...SAMPLE};selectedStates=["PA","NJ","FL","TX"];buildStateForm();buildStateGrid();lastRows=null;document.getElementById("stateReport").className="empty-state";document.getElementById("stateReport").innerHTML='<h2>Your state comparison report will appear here</h2><p>Enter your details, pick states, and press <strong>Calculate Comparison</strong>.</p>';toast("Reset to v5 sample.")}
+// FIRE ENGINE
+const FIRE_SAMPLE={husbandAge:45,wifeAge:40,momAge:70,momDeathYear:16,retirementAge:47,ssClaimAge:67,rmdStartAge:73,planningAge:95,traditional401k:1600000,roth:1100000,hsa:70000,taxable:3230000,retirementReturn:10,taxableReturn:8,generalInflation:5,bracketInflation:2.5,contribution401k:30500,backdoorRoth:7000,hsaContribution:8500,taxableContribution:104000,currentExpenses:100000,expenseGrowthPre55:10,taperStartAge:55,taperEndAge:65,expenseGrowthAfter65:5,airbnbValue:1400000,airbnbMortgage:400000,airbnbIncome:50000,airbnbIncomeGrowth:4,airbnbMortgageYears:15,airbnbTaxShieldYears:15,wifeIhss:13200,ssMonthlyToday:6000,housePurchaseYear:3,housePrice:1000000,houseAppreciation:3,standardDeduction:31500,top10:24800,top12:100800,top22:214700,top24:410200,top32:520200,top35:780800,ltcgRate:15,qdYield:1.5,ssTaxablePct:85,realizationRate:10,fpl2026:21150,acaCliffMultiple:4,planningState:"WA"};
+let fireProfile={...FIRE_SAMPLE},lastFire=null;
+const FIRE_FIELDS=[{group:"Family / timing"},{k:"husbandAge",label:"Husband current age",type:"int"},{k:"wifeAge",label:"Wife current age",type:"int"},{k:"momAge",label:"Mom current age",type:"int"},{k:"momDeathYear",label:"Mom death year #",type:"int"},{k:"retirementAge",label:"Husband retirement age",type:"int"},{k:"ssClaimAge",label:"SS claim age",type:"int"},{k:"rmdStartAge",label:"RMD start age",type:"int"},{k:"planningAge",label:"Planning age",type:"int"},{k:"planningState",label:"Planning state",type:"select",opts:BETA_STATES.map(x=>[x,`${x} — ${STATE_DATA[x].stateName}`])},{group:"Starting accounts"},{k:"traditional401k",label:"401(k)",type:"money"},{k:"roth",label:"Roth IRA",type:"money"},{k:"hsa",label:"HSA",type:"money"},{k:"taxable",label:"Taxable",type:"money"},{group:"Returns & inflation"},{k:"retirementReturn",label:"401(k)+Roth+HSA return (%)",type:"pct"},{k:"taxableReturn",label:"Taxable return (%)",type:"pct"},{k:"generalInflation",label:"General inflation (%)",type:"pct"},{k:"bracketInflation",label:"Tax bracket inflation (%)",type:"pct"},{group:"Contributions while working"},{k:"contribution401k",label:"401(k) /yr",type:"money"},{k:"backdoorRoth",label:"Backdoor Roth /yr",type:"money"},{k:"hsaContribution",label:"HSA /yr",type:"money"},{k:"taxableContribution",label:"Taxable /yr",type:"money"},{group:"Expenses"},{k:"currentExpenses",label:"Current annual expenses",type:"money"},{k:"expenseGrowthPre55",label:"Growth before taper (%)",type:"pct"},{k:"taperStartAge",label:"Taper start age",type:"int"},{k:"taperEndAge",label:"Taper end age",type:"int"},{k:"expenseGrowthAfter65",label:"Growth after taper (%)",type:"pct"},{group:"Airbnb / other income"},{k:"airbnbValue",label:"Airbnb value today",type:"money"},{k:"airbnbMortgage",label:"Airbnb mortgage today",type:"money"},{k:"airbnbIncome",label:"Airbnb net cash income",type:"money"},{k:"airbnbIncomeGrowth",label:"Airbnb income growth (%)",type:"pct"},{k:"airbnbMortgageYears",label:"Airbnb mortgage years",type:"int"},{k:"airbnbTaxShieldYears",label:"Airbnb tax shield years",type:"int"},{k:"wifeIhss",label:"Wife IHSS today/yr",type:"money"},{k:"ssMonthlyToday",label:"SS today/mo",type:"money"},{group:"House / tax assumptions"},{k:"housePurchaseYear",label:"House purchase year #",type:"int"},{k:"housePrice",label:"House price",type:"money"},{k:"houseAppreciation",label:"House appreciation (%)",type:"pct"},{k:"standardDeduction",label:"Std deduction",type:"money"},{k:"top10",label:"Top 10% bracket",type:"money"},{k:"top12",label:"Top 12% bracket",type:"money"},{k:"top22",label:"Top 22% bracket",type:"money"},{k:"top24",label:"Top 24% bracket",type:"money"},{k:"top32",label:"Top 32% bracket",type:"money"},{k:"top35",label:"Top 35% bracket",type:"money"},{k:"ltcgRate",label:"LTCG/QD rate (%)",type:"pct"},{k:"qdYield",label:"QD yield (%)",type:"pct"},{k:"ssTaxablePct",label:"SS taxable (%)",type:"pct"},{k:"realizationRate",label:"Realization rate (%)",type:"pct"},{k:"fpl2026",label:"2026 FPL household of 2",type:"money"},{k:"acaCliffMultiple",label:"ACA cliff multiple",type:"pct"}];
+function buildFireForm(){buildForm(FIRE_FIELDS,"fireFormgrid",fireProfile,onGenericFieldChange)}
+function syncWinningStateToFireEngine(){if(lastRows&&lastRows.length){fireProfile.planningState=lastRows[0].abbr;const el=document.querySelector('#fireFormgrid [data-key="planningState"]');if(el)el.value=fireProfile.planningState;document.getElementById("fireSelectedState").textContent=`${lastRows[0].s.stateName} (${lastRows[0].abbr}) from State Optimizer`}else{document.getElementById("fireSelectedState").textContent=`${STATE_DATA[fireProfile.planningState].stateName} (${fireProfile.planningState})`}}
+function inflate(value,rate,years){return value*Math.pow(1+(rate||0)/100,Math.max(0,years))}
+function expenseAtAge(fp,age){let exp=fp.currentExpenses;const start=Number(fp.taperStartAge||55),end=Number(fp.taperEndAge||65),pre=Number(fp.expenseGrowthPre55||0),post=Number(fp.expenseGrowthAfter65||0);for(let a=fp.husbandAge;a<age;a++){let g;if(a<start){g=pre}else if(a<end&&end>start){const t=(a-start)/(end-start);g=pre+(post-pre)*t}else{g=post}exp*=1+g/100}return exp}
+const RMD_TABLE={73:26.5,74:25.5,75:24.6,76:23.7,77:22.9,78:22.0,79:21.1,80:20.2,81:19.4,82:18.5,83:17.7,84:16.8,85:16.0,86:15.2,87:14.4,88:13.7,89:12.9,90:12.2,91:11.5,92:10.8,93:10.1,94:9.5,95:8.9,96:8.4,97:7.8,98:7.3,99:6.8,100:6.4,101:6.0,102:5.6,103:5.2,104:4.9,105:4.6,106:4.3,107:4.1,108:3.9,109:3.7,110:3.5,111:3.4,112:3.3,113:3.1,114:3.0,115:2.9,116:2.8,117:2.7,118:2.5,119:2.3,120:2.0};
+function rmdDivisor(age){return RMD_TABLE[age]||Math.max(1,8.9-(age-95)*.5)}
+function seniorStdDeduction(fp,age,year){const husband65=age>=65;const wifeAge=(fp.wifeAge||age)+(age-(fp.husbandAge||age));const wife65=wifeAge>=65;let extra=(husband65?1600:0)+(wife65?1600:0);if(year<=3)extra+=(husband65?6000:0)+(wife65?6000:0);return extra}
+function fedTax(fp,ordinary,ltcg,year,age){const infl=Math.pow(1+fp.bracketInflation/100,year),std=fp.standardDeduction*infl+seniorStdDeduction(fp,age,year),br=[{top:fp.top10*infl,rate:.10},{top:fp.top12*infl,rate:.12},{top:fp.top22*infl,rate:.22},{top:fp.top24*infl,rate:.24},{top:fp.top32*infl,rate:.32},{top:fp.top35*infl,rate:.35},{top:Infinity,rate:.37}];let taxable=Math.max(0,ordinary-std),tax=0,lower=0;for(const b of br){if(taxable>lower){const slice=Math.min(taxable,b.top)-lower;if(slice>0)tax+=slice*b.rate}lower=b.top;if(taxable<=b.top)break}tax+=Math.max(0,ltcg)*(fp.ltcgRate/100);return tax}
+function stateTaxForYear(fp,state,ordinary,ss,ira,divs,ltcg,otherIncome){const other=Math.max(0,otherIncome||0);const p={filing:"mfj",ssIncome:ss,pension:0,iraWithdrawals:ira,rothWithdrawals:0,dividends:divs,ltcg:ltgSafe(ltcg),otherTaxableIncome:other,otherIncome:other,airbnbIncome:0,age:fp.retirementAge,retireAge:fp.retirementAge,ssClaimAge:fp.ssClaimAge,useSSTiming:false};const taxable=calculateStateTaxableIncome(p,state);return calculateStateIncomeTax(taxable,state,"mfj")+calculateSpecialCapGainsTax(p,state)}
+function ltgSafe(v){return Math.max(0,Number(v)||0)}
+function simulateStrategy(fp,strategy){
+  let trad=fp.traditional401k, roth=fp.roth, hsa=fp.hsa, taxable=fp.taxable;
+  const rRet=fp.retirementReturn/100, rTax=fp.taxableReturn/100, state=STATE_DATA[fp.planningState];
+  let lifetimeFed=0, lifetimeState=0, lifetimeAca=0, totalConv=0, peakRmd=0, shortfall=false;
+  let housePurchased=false;
+  const rows=[];
+  for(let age=fp.husbandAge; age<=fp.planningAge; age++){
+    const year=age-fp.husbandAge;
+    const working=age<fp.retirementAge;
+    if(working){
+      trad+=fp.contribution401k;
+      roth+=fp.backdoorRoth;
+      hsa+=fp.hsaContribution;
+      taxable+=fp.taxableContribution;
+    }
 
-STATE_DATA.PA.localTaxNote = "Pennsylvania municipalities levy a local Earned Income Tax, but it generally applies to wages, not Social Security, pensions, or retirement-account withdrawals. Confirm for your specific municipality.";
-STATE_DATA.NY.localTaxNote = "New York City and Yonkers levy their own resident income taxes on top of the state tax. This model does not include them — they can materially change the result if you live there.";
-STATE_DATA.MD.localTaxNote = "Maryland counties levy piggyback local income taxes that do apply to retirement income. This model does not include them, so Maryland's true income-tax cost is higher than shown.";
+    const expenses=expenseAtAge(fp,age);
+    const airbnbCash=inflate(fp.airbnbIncome,fp.airbnbIncomeGrowth,year);
+    const airbnbTaxable=year<(fp.airbnbTaxShieldYears||0)?airbnbCash*.5:airbnbCash;
+    const ihss=year<=(fp.momDeathYear||999)?inflate(fp.wifeIhss,fp.generalInflation,year):0;
+    const ss=age>=fp.ssClaimAge?inflate(fp.ssMonthlyToday*12,fp.generalInflation,age-fp.husbandAge):0;
+    const qd=taxable*(fp.qdYield/100);
+    const realized=taxable*rTax*(fp.realizationRate/100);
 
-const fmtUSD = (n)=>{
-  if(n===null||n===undefined||isNaN(n)) return "$0";
-  const neg = n<0; const v = Math.round(Math.abs(n));
-  return (neg?"-$":"$")+v.toLocaleString("en-US");
-};
-const fmtPct = (r,dec=2)=> (r*100).toFixed(dec).replace(/\.?0+$/,"")+"%";
-const esc = (s)=> String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    let rmd=age>=fp.rmdStartAge?trad/rmdDivisor(age):0;
+    rmd=Math.min(rmd,trad);
 
-function inclusionFraction(treatment){
-  switch(treatment){
-    case "not taxed": return 0;
-    case "partially excluded":
-    case "partially taxed": return 0.5;
-    case "taxed":
-    case "taxed as income": return 1;
-    default: return 0;
-  }
-}
-const FILING_FACTOR = { single:0.5, mfs:0.5, hoh:0.6, mfj:1.0 };
+    const externalCash=airbnbCash+ihss+ss;
+    let spendingNeed=Math.max(0,expenses-externalCash);
+    let iraW=0, rothW=0, taxW=0, conversion=0;
 
-function calculateAnnualIncome(p){
-  return p.ssIncome + p.pension + p.iraWithdrawals + p.rothWithdrawals + p.dividends + p.ltcg + (p.otherIncome||0) + (p.airbnbIncome||0);
-}
-function fvLumpAndContrib(start, annualContrib, ratePct, years){
-  const r = Math.max(-0.99, (ratePct||0)/100);
-  const n = Math.max(0, years||0);
-  let v = Math.max(0,start||0);
-  for(let i=0;i<n;i++) v = v*(1+r) + Math.max(0,annualContrib||0);
-  return v;
-}
-function compound(value, ratePct, years){
-  return Math.max(0,value||0) * Math.pow(1 + Math.max(-0.99,(ratePct||0)/100), Math.max(0,years||0));
-}
-function calculateAdvancedSnapshot(p){
-  const yearsToRetire = Math.max(0, (p.retireAge||0) - (p.age||0));
-  const yearsToClaim = Math.max(0, (p.ssClaimAge||67) - (p.age||0));
-  const yearsToRmd = Math.max(0, (p.rmdStartAge||73) - (p.age||0));
-  const retReturn = p.retirementReturn || 0;
-  const taxableReturn = p.taxableReturn || 0;
-  const iraAtRetire = fvLumpAndContrib(p.iraBalance, p.contrib401k, retReturn, yearsToRetire);
-  const rothAtRetire = fvLumpAndContrib(p.rothBalance, p.contribBackdoorRoth, retReturn, yearsToRetire);
-  const hsaAtRetire = fvLumpAndContrib(p.hsaBalance, p.contribHsa, retReturn, yearsToRetire);
-  const taxableAtRetire = fvLumpAndContrib(p.brokerage, p.contribTaxable, taxableReturn, yearsToRetire);
-  const projectedLiquidAtRetire = iraAtRetire + rothAtRetire + hsaAtRetire + taxableAtRetire;
-  const expensesAtRetire = compound(p.spending, p.expenseGrowthPre55 || p.inflation || 0, yearsToRetire);
-  const airbnbIncomeAtRetire = compound(p.airbnbIncome, p.airbnbIncomeGrowth || 0, yearsToRetire);
-  const otherIncomeAtRetire = compound(p.otherIncome, p.inflation || 0, yearsToRetire);
-  const ssAtClaim = compound(p.ssIncome, p.inflation || 0, yearsToClaim);
-  const acaCliffNow = (p.fpl2026||0) * (p.acaCliff||0);
-  const acaCliffAtRetire = compound(acaCliffNow, p.inflation || 0, yearsToRetire);
-  const taxableDividendsAtRetire = taxableAtRetire * ((p.qualifiedDividendYield||0)/100);
-  const taxableRealizedGainsAtRetire = taxableAtRetire * ((p.taxableReturn||0)/100) * ((p.taxableRealizationRate||0)/100);
-  const estimatedAcaMagiAtRetire = airbnbIncomeAtRetire + otherIncomeAtRetire + taxableDividendsAtRetire + taxableRealizedGainsAtRetire + Math.max(0,p.iraWithdrawals||0);
-  const airbnbEquityNow = Math.max(0,(p.airbnbValue||0) - (p.airbnbMortgage||0));
-  const airbnbMortgagePayoffAnnual = (p.airbnbMortgageYears||0) > 0 ? (p.airbnbMortgage||0)/(p.airbnbMortgageYears||1) : 0;
-  const housePriceAtPurchase = (p.housePurchaseYear||0) > 0 ? compound(p.housePurchasePrice||0, p.houseAppreciation||0, p.housePurchaseYear||0) : 0;
-  const iraAtRmd = fvLumpAndContrib(p.iraBalance, p.contrib401k, retReturn, yearsToRmd);
-  const estimatedFirstRmd = iraAtRmd / 26.5;
-  return {yearsToRetire, yearsToClaim, yearsToRmd, iraAtRetire, rothAtRetire, hsaAtRetire, taxableAtRetire, projectedLiquidAtRetire, expensesAtRetire, airbnbIncomeAtRetire, otherIncomeAtRetire, ssAtClaim, acaCliffAtRetire, estimatedAcaMagiAtRetire, taxableDividendsAtRetire, taxableRealizedGainsAtRetire, airbnbEquityNow, airbnbMortgagePayoffAnnual, housePriceAtPurchase, iraAtRmd, estimatedFirstRmd};
-}
-function calculateStateTaxableIncome(p, s){
-  if(!s.hasStateIncomeTax) return 0;
-  let taxable = 0;
-  taxable += inclusionFraction(s.socialSecurityTaxTreatment) * p.ssIncome;
-  taxable += inclusionFraction(s.pensionTaxTreatment) * p.pension;
-  taxable += inclusionFraction(s.ira401kTaxTreatment) * p.iraWithdrawals;
-  taxable += p.dividends;
-  taxable += (p.otherIncome||0) + (p.airbnbIncome||0);
-  if(s.capitalGainsTaxTreatment === "taxed as income") taxable += p.ltcg;
-  else if(s.capitalGainsTaxTreatment === "partially taxed") taxable += 0.5 * p.ltcg;
-  return Math.max(0, taxable);
-}
-function calculateStateIncomeTax(taxableIncome, s, filingStatus){
-  if(!s.hasStateIncomeTax) return 0;
-  if(s.incomeTaxType === "flat") return taxableIncome * s.flatIncomeTaxRate;
-  if(s.incomeTaxType === "progressive" && s.progressiveBrackets.length){
-    const f = FILING_FACTOR[filingStatus] || 1;
-    let tax = 0, lower = 0;
-    for(const b of s.progressiveBrackets){
-      const upper = (b.upTo===Infinity)?Infinity:b.upTo*f;
-      if(taxableIncome > lower){
-        const slice = Math.min(taxableIncome, upper) - lower;
-        if(slice>0) tax += slice * b.rate;
+    if(!working){
+      if(strategy==="Taxable-first"){
+        taxW=Math.min(taxable,spendingNeed);
+        spendingNeed-=taxW;
+        iraW=Math.min(trad,spendingNeed);
+        spendingNeed-=iraW;
+        rothW=Math.min(roth,spendingNeed);
+        spendingNeed-=rothW;
+      }else if(strategy==="Balanced"){
+        taxW=Math.min(taxable,spendingNeed*.5);
+        iraW=Math.min(trad,spendingNeed*.3);
+        rothW=Math.min(roth,Math.max(0,spendingNeed-taxW-iraW));
+        spendingNeed-=taxW+iraW+rothW;
+      }else if(strategy==="Roth conversion ladder"){
+        taxW=Math.min(taxable,spendingNeed);
+        spendingNeed-=taxW;
+        rothW=Math.min(roth,spendingNeed);
+        spendingNeed-=rothW;
+        const target=inflate(fp.top24,fp.bracketInflation,year);
+        const preOrd=airbnbTaxable+ihss+iraW+ss*fp.ssTaxablePct/100;
+        conversion=age<fp.rmdStartAge?Math.max(0,Math.min(trad,target-preOrd)):0;
+      }else if(strategy==="ACA-optimized"){
+        taxW=Math.min(taxable,spendingNeed);
+        spendingNeed-=taxW;
+        rothW=Math.min(roth,spendingNeed);
+        spendingNeed-=rothW;
+        const cliff=inflate(fp.fpl2026,fp.generalInflation,year)*fp.acaCliffMultiple;
+        const preMagi=airbnbTaxable+ihss+qd+realized+ss*fp.ssTaxablePct/100;
+        conversion=(age<65&&age<fp.rmdStartAge)?Math.max(0,Math.min(trad,cliff-preMagi)):0;
+        if(age>=65&&age<fp.rmdStartAge){
+          conversion=Math.max(0,Math.min(trad,inflate(fp.top22,fp.bracketInflation,year)-(airbnbTaxable+ihss)));
+        }
       }
-      lower = upper;
-      if(taxableIncome <= upper) break;
-    }
-    return tax;
-  }
-  return taxableIncome * (s.flatIncomeTaxRate||0);
-}
-function calculateSpecialCapGainsTax(p, s){
-  if(s.capitalGainsTaxTreatment === "special" && s.capGainsThreshold!=null){
-    return Math.max(0, p.ltcg - s.capGainsThreshold) * (s.capGainsRate||0);
-  }
-  return 0;
-}
-function calculatePropertyTax(p, s){
-  if(p.ownership !== "own") return 0;
-  return Math.max(0,p.homeValue) * s.effectivePropertyTaxRate;
-}
-const SALES_TAXABLE_SHARE = 0.55;
-function calculateSalesTax(p, s){
-  const salesTaxableSpending = Math.max(0,p.spending) * SALES_TAXABLE_SHARE;
-  return salesTaxableSpending * s.averageSalesTaxRate;
-}
-function calculateHousingCost(p){
-  if(p.ownership === "rent") return Math.max(0, p.rent||0);
-  return Math.max(0, p.mortgage||0);
-}
-const INSURANCE_DEFAULTS = { low:2000, medium:3500, high:6000, "very high":8000 };
-function calculateInsuranceCost(p, s){
-  if(p.ownership !== "own") return 0;
-  if(p.insurance && p.insurance>0) return p.insurance;
-  return INSURANCE_DEFAULTS[s.insuranceRisk] || 3500;
-}
-function defaultHealthcare(p){
-  const married = (p.filing==="mfj"||p.filing==="mfs");
-  return married ? 16000 : 8000;
-}
-function healthcareBase(p){
-  return (p.healthcare && p.healthcare>0) ? p.healthcare : defaultHealthcare(p);
-}
-function calculateHealthcareAdjustment(p, s){
-  return healthcareBase(p) * ((s.healthcareCostIndex - 100) / 100);
-}
-function calculateCostOfLivingAdjustment(p, s){
-  const housing = calculateHousingCost(p);
-  const healthcare = healthcareBase(p);
-  const insurance = calculateInsuranceCost(p, s);
-  const baseLiving = Math.max(0, Math.max(0,p.spending) - housing - healthcare - insurance);
-  return baseLiving * ((s.costOfLivingIndex - 100) / 100);
-}
-function calculateAnnualStateImpact(p, s){
-  const taxable = calculateStateTaxableIncome(p,s);
-  const incomeTax = calculateStateIncomeTax(taxable, s, p.filing) + calculateSpecialCapGainsTax(p,s);
-  const propertyTax = calculatePropertyTax(p,s);
-  const salesTax = calculateSalesTax(p,s);
-  const ins = calculateInsuranceCost(p,s);
-  const hc = calculateHealthcareAdjustment(p,s);
-  const col = calculateCostOfLivingAdjustment(p,s);
-  const requiredCosts = incomeTax + propertyTax + salesTax + ins;
-  const relativeAdj = col + hc;
-  const impact = requiredCosts + relativeAdj;
-  const housing = calculateHousingCost(p);
-  return { incomeTax, propertyTax, salesTax, ins, hc, col, taxable, requiredCosts, relativeAdj, impact, housing };
-}
-function calculateCumulativeImpact(p, s, horizon, obj){
-  const annual = (obj||calculateAnnualStateImpact(p,s)).impact;
-  const n = Math.max(1, horizon);
-  const i = Math.max(0, (p.inflation||0)) / 100;
-  const cumulativeImpact = i > 0 ? annual * (Math.pow(1+i, n) - 1) / i : annual * n;
-  return { cumulativeImpact, projected: p.netWorth - cumulativeImpact };
-}
-function stateConfidence(s){
-  if (s.abbreviation === "WA") return "Medium";
-  if (!s.hasStateIncomeTax) return "High";
-  const hasPartial = [
-    s.socialSecurityTaxTreatment,
-    s.pensionTaxTreatment,
-    s.ira401kTaxTreatment,
-    s.capitalGainsTaxTreatment
-  ].some(t => t === "partially excluded" || t === "partially taxed");
-  if (s.incomeTaxType === "progressive" && hasPartial) return "Low";
-  return "Medium";
-}
-function rankStates(p, selected){
-  const horizon = Math.max(1, p.horizon);
-  const rows = selected.map(abbr=>{
-    const s = STATE_DATA[abbr];
-    const d = calculateAnnualStateImpact(p,s);
-    const nw = calculateCumulativeImpact(p,s,horizon,d);
-    return { abbr, s, ...d, confidence: stateConfidence(s), cumulativeImpact: nw.cumulativeImpact, projected: nw.projected };
-  });
-  rows.sort((a,b)=>{
-    if(b.projected !== a.projected) return b.projected - a.projected;
-    if(a.impact !== b.impact) return a.impact - b.impact;
-    return a.s.costOfLivingIndex - b.s.costOfLivingIndex;
-  });
-  rows.forEach((r,i)=> r.rank = i+1);
-  return rows;
-}
-
-function verdictFor(p, r, rows){
-  const labels = [];
-  const s = r.s;
-  if(r.rank===1) labels.push({t:"Best overall fit",c:"v-good"});
-  if(!s.hasStateIncomeTax) labels.push({t:"Strong tax state",c:"v-good"});
-  if(s.hasStateIncomeTax && s.ira401kTaxTreatment==="not taxed" && s.pensionTaxTreatment==="not taxed")
-    labels.push({t:"Retirement income friendly",c:"v-good"});
-  if(p.ownership==="own" && r.propertyTax >= 12000) labels.push({t:"High property tax",c:"v-warn"});
-  if(r.col >= p.spending*0.08) labels.push({t:"High cost-of-living burden",c:"v-warn"});
-  if(s.hasEstateTax) labels.push({t:"Estate tax risk",c:"v-warn"});
-  if(s.hasInheritanceTax) labels.push({t:"Inheritance tax risk",c:"v-warn"});
-  if(r.rank===rows.length && rows.length>1) labels.push({t:"Expensive for this profile",c:"v-bad"});
-  const seen=new Set(), out=[];
-  for(const l of labels){ if(!seen.has(l.t)){seen.add(l.t);out.push(l);} }
-  if(!out.length) out.push({t:"Balanced profile",c:"v-neutral"});
-  return out.slice(0,3);
-}
-
-function generateRedFlags(p, s, r){
-  const flags=[];
-  const push=(sev,title,text)=> flags.push({sev,title,text});
-
-  if(inclusionFraction(s.socialSecurityTaxTreatment)>0 && p.ssIncome>0)
-    push("high","Taxes Social Security",`${s.stateName} taxes at least part of Social Security benefits.`);
-  if(inclusionFraction(s.ira401kTaxTreatment)>=1 && p.iraWithdrawals>0)
-    push("high","Taxes IRA/401(k) withdrawals",`Your ${fmtUSD(p.iraWithdrawals)}/yr of traditional withdrawals are fully taxable here.`);
-  else if(inclusionFraction(s.ira401kTaxTreatment)>0 && p.iraWithdrawals>0)
-    push("med","Partially taxes IRA/401(k) withdrawals",`Part of your ${fmtUSD(p.iraWithdrawals)}/yr of traditional withdrawals may be taxable after exclusions.`);
-  if(p.ownership==="own" && r.propertyTax >= 12000)
-    push("high","High property tax",`At an effective rate near ${fmtPct(s.effectivePropertyTaxRate)}, your home implies about ${fmtUSD(r.propertyTax)}/yr in property tax.`);
-  if(s.costOfLivingIndex >= 115)
-    push("high","High cost of living",`Cost of living runs roughly ${s.costOfLivingIndex-100}% above the national baseline.`);
-  else if(s.costOfLivingIndex >= 108)
-    push("med","Above-average cost of living",`Cost of living is about ${s.costOfLivingIndex-100}% above baseline.`);
-  if(s.healthcareCostIndex >= 107)
-    push("med","High healthcare cost","Healthcare costs here run meaningfully above the national average.");
-  if(p.ownership==="own" && (s.insuranceRisk==="high"||s.insuranceRisk==="very high"))
-    push(s.insuranceRisk==="very high"?"high":"med","High home insurance risk",`${s.stateName} carries ${s.insuranceRisk} property-insurance risk.`);
-  if(s.hasEstateTax)
-    push("med","Estate tax risk",`${s.stateName} levies a state estate tax.`);
-  if(s.hasInheritanceTax)
-    push("med","Inheritance tax risk",`${s.stateName} has an inheritance tax that can apply to heirs.`);
-  if(s.localTaxNote)
-    push("med","Local income tax may apply",s.localTaxNote);
-  if(s.abbreviation==="MD")
-    push("high","Maryland local income taxes not included","Maryland local income taxes are not included. Actual income tax may be higher.");
-
-  return flags;
-}
-
-function netWorthBand(nw){
-  if(nw < 1000000) return {label:"Under $1,000,000",focus:"cost of living, rent, property tax, and healthcare costs"};
-  if(nw < 2000000) return {label:"$1,000,000 – $2,000,000",focus:"state income tax, property tax, and your retirement withdrawal strategy"};
-  if(nw < 5000000) return {label:"$2,000,000 – $5,000,000",focus:"IRA/401(k) withdrawal taxation, RMD exposure, property tax, Medicare IRMAA awareness, and estate or inheritance tax risk"};
-  return {label:"Above $5,000,000",focus:"estate tax, inheritance tax, capital gains, large IRA balances, property tax, and multi-state planning risk"};
-}
-function narrativeTakeaway(p, rows){
-  return rows.map(r=>{
-    const s=r.s;
-    if(!s.hasStateIncomeTax){
-      let t = `${s.stateName} wins on income tax because it does not tax wages or retirement income`;
-      if(r.propertyTax >= 12000) t += `, but property tax runs about ${fmtUSD(r.propertyTax)}/yr`;
-      else if(s.insuranceRisk==="very high"||s.insuranceRisk==="high") t += `, though higher home-insurance risk offsets some of that benefit`;
-      return t + ".";
-    }
-    if(s.ira401kTaxTreatment==="not taxed" && s.pensionTaxTreatment==="not taxed"){
-      return `${s.stateName} may be surprisingly strong for retirees because many retirement distributions are not taxed at the state level.`;
-    }
-    if(s.ira401kTaxTreatment==="taxed"){
-      return `${s.stateName} can carry higher annual drag because IRA/401(k) withdrawals are taxed.`;
-    }
-    return `${s.stateName} sits in the middle — an income tax applies, but retirement-income exclusions soften it.`;
-  }).join(" ");
-}
-function ssDisplay(t){ if(t==="not taxed")return['no','No']; if(t==="taxed")return['yes','Yes']; return['partial','Partial']; }
-function incDisplay(t){ if(t==="not taxed")return['no','No']; if(t==="taxed"||t==="taxed as income")return['yes','Yes']; return['partial','Partial']; }
-function cgDisplay(t){
-  if(t==="not taxed")return['no','No'];
-  if(t==="taxed as income")return['yes','As income'];
-  if(t==="partially taxed")return['partial','Partial'];
-  if(t==="special")return['partial','Large gains'];
-  return['partial','—'];
-}
-
-const FIELDS = [
-  {group:"Household"},
-  {k:"filing",label:"Filing status",type:"select",opts:[["single","Single"],["mfj","Married filing jointly"],["mfs","Married filing separately"],["hoh","Head of household"]]},
-  {k:"age",label:"Current age",type:"int"},
-  {k:"retireAge",label:"Retirement age",type:"int"},
-  {k:"horizon",label:"Planning horizon (years)",type:"int"},
-  {k:"inflation",label:"Annual inflation on costs (%)",type:"pct"},
-  {group:"Balances"},
-  {k:"netWorth",label:"Total net worth",type:"money"},
-  {k:"brokerage",label:"Taxable brokerage balance",type:"money"},
-  {k:"iraBalance",label:"Traditional 401(k)/IRA balance",type:"money"},
-  {k:"rothBalance",label:"Roth IRA / Roth 401(k) balance",type:"money"},
-  {k:"cash",label:"Cash balance",type:"money"},
-  {group:"Annual income"},
-  {k:"ssIncome",label:"Social Security income",type:"money"},
-  {k:"pension",label:"Pension income",type:"money"},
-  {k:"iraWithdrawals",label:"Traditional IRA/401(k) withdrawals",type:"money"},
-  {k:"rothWithdrawals",label:"Roth withdrawals",type:"money"},
-  {k:"dividends",label:"Brokerage dividends & interest",type:"money"},
-  {k:"ltcg",label:"Long-term capital gains",type:"money"},
-  {group:"Spending & housing"},
-  {k:"spending",label:"Annual retirement spending need",type:"money"},
-  {k:"ownership",label:"Own or rent",type:"select",opts:[["own","Own"],["rent","Rent"]]},
-  {k:"homeValue",label:"Home value",type:"money",showIf:p=>p.ownership==="own"},
-  {k:"rent",label:"Annual rent",type:"money",showIf:p=>p.ownership==="rent"},
-  {k:"mortgage",label:"Annual mortgage payment (optional)",type:"money",showIf:p=>p.ownership==="own"},
-  {group:"Advanced FIRE inputs (optional, v5 assumptions)"},
-  {k:"spouseAge",label:"Spouse current age",type:"int"},
-  {k:"momAge",label:"Mom current age",type:"int"},
-  {k:"momDeathYears",label:"Mom death year #",type:"int"},
-  {k:"ssClaimAge",label:"Social Security claim age",type:"int"},
-  {k:"rmdStartAge",label:"RMD start age",type:"int"},
-  {k:"hsaBalance",label:"HSA balance",type:"money"},
-  {k:"retirementReturn",label:"401(k)+Roth+HSA return (%)",type:"pct"},
-  {k:"taxableReturn",label:"Taxable return (%)",type:"pct"},
-  {k:"bracketInflation",label:"Tax bracket inflation (%)",type:"pct"},
-  {k:"contrib401k",label:"401(k) contribution / yr",type:"money"},
-  {k:"contribBackdoorRoth",label:"Backdoor Roth / yr",type:"money"},
-  {k:"contribHsa",label:"HSA contribution / yr",type:"money"},
-  {k:"contribTaxable",label:"Taxable contribution / yr",type:"money"},
-  {k:"expenseGrowthPre55",label:"Expense growth before 55 (%)",type:"pct"},
-  {k:"taperStartAge",label:"Expense taper start age",type:"int"},
-  {k:"taperEndAge",label:"Expense taper end age",type:"int"},
-  {k:"expenseGrowth65Plus",label:"Expense growth 65+ (%)",type:"pct"},
-  {k:"airbnbValue",label:"Airbnb value today",type:"money"},
-  {k:"airbnbMortgage",label:"Airbnb mortgage today",type:"money"},
-  {k:"airbnbIncome",label:"Airbnb net cash income / yr",type:"money"},
-  {k:"airbnbIncomeGrowth",label:"Airbnb income growth (%)",type:"pct"},
-  {k:"airbnbMortgageYears",label:"Airbnb mortgage years",type:"int"},
-  {k:"airbnbTaxShieldYears",label:"Airbnb tax shield years",type:"int"},
-  {k:"otherIncome",label:"Other income today / yr",type:"money"},
-  {k:"housePurchaseYear",label:"House purchase year #",type:"int"},
-  {k:"housePurchasePrice",label:"Future house price",type:"money"},
-  {k:"houseAppreciation",label:"House appreciation (%)",type:"pct"},
-  {k:"fedStdDeduction",label:"Federal standard deduction",type:"money"},
-  {k:"qualifiedDividendYield",label:"Qualified dividend yield (%)",type:"pct"},
-  {k:"taxableRealizationRate",label:"Taxable realization rate (%)",type:"pct"},
-  {k:"ssTaxablePct",label:"SS taxable assumption (%)",type:"pct"},
-  {k:"fpl2026",label:"2026 FPL household of 2",type:"money"},
-  {k:"acaCliff",label:"ACA cliff multiple",type:"pct"},
-  {group:"Optional costs"},
-  {k:"healthcare",label:"Annual healthcare premium (optional)",type:"money"},
-  {k:"insurance",label:"Annual property insurance (optional)",type:"money",showIf:p=>p.ownership==="own"}
-];
-
-const SAMPLE = {
-  filing:"mfj", age:45, spouseAge:40, momAge:70, momDeathYears:16,
-  retireAge:47, horizon:40, inflation:5, bracketInflation:2.5,
-  ssClaimAge:67, rmdStartAge:73,
-  netWorth:7000000, brokerage:3230000, iraBalance:1600000, rothBalance:1100000, hsaBalance:70000, cash:0,
-  ssIncome:72000, pension:0, iraWithdrawals:0, rothWithdrawals:0, dividends:0, ltcg:0,
-  otherIncome:13200,
-  spending:100000, ownership:"own", homeValue:1000000, rent:0, mortgage:0,
-  healthcare:16000, insurance:0,
-  retirementReturn:10, taxableReturn:8,
-  contrib401k:30500, contribBackdoorRoth:7000, contribHsa:8500, contribTaxable:104000,
-  expenseGrowthPre55:10, taperStartAge:55, taperEndAge:65, expenseGrowth65Plus:5,
-  airbnbValue:1400000, airbnbMortgage:400000, airbnbIncome:50000, airbnbIncomeGrowth:4, airbnbMortgageYears:15, airbnbTaxShieldYears:15,
-  housePurchaseYear:3, housePurchasePrice:1000000, houseAppreciation:3,
-  fedStdDeduction:31500, qualifiedDividendYield:1.5, taxableRealizationRate:10, ssTaxablePct:85,
-  fpl2026:21150, acaCliff:4
-};
-
-const PRESETS = [
-  {label:"PA · NJ · FL · TX", states:["PA","NJ","FL","TX"]},
-  {label:"CA · TX · FL · NV", states:["CA","TX","FL","NV"]},
-  {label:"NY · FL · NC · PA", states:["NY","FL","NC","PA"]},
-  {label:"WA · OR · AZ · NV", states:["WA","OR","AZ","NV"]},
-  {label:"NJ · DE · PA · MD", states:["NJ","DE","PA","MD"]}
-];
-
-let profile = {...SAMPLE};
-let selectedStates = ["PA","NJ","FL","TX"];
-let lastRows = null;
-
-function parseMoney(v){
-  if(v===""||v==null) return 0;
-  return Math.max(0, Number(String(v).replace(/[^0-9.\-]/g,"")) || 0);
-}
-function parseIntSafe(v, d=0){ const n=parseInt(v,10); return isNaN(n)?d:n; }
-function parseFloatSafe(v, d=0){ const n=parseFloat(v); return isNaN(n)?d:n; }
-
-function buildForm(){
-  const grid=document.getElementById("formgrid");
-  grid.innerHTML="";
-  FIELDS.forEach(f=>{
-    if(f.group){
-      const d=document.createElement("div");
-      d.className="fieldgroup-title";
-      d.textContent=f.group;
-      grid.appendChild(d);
-      return;
-    }
-    const wrap=document.createElement("label");
-    wrap.className="f";
-    wrap.dataset.key=f.k;
-    if(f.showIf && !f.showIf(profile)) wrap.classList.add("hidden");
-
-    const lbl=document.createElement("div");
-    lbl.className="lbl";
-    lbl.textContent=f.label;
-    wrap.appendChild(lbl);
-
-    let input;
-    if(f.type==="select"){
-      input=document.createElement("select");
-      f.opts.forEach(([val,txt])=>{
-        const o=document.createElement("option");
-        o.value=val; o.textContent=txt;
-        if(profile[f.k]===val) o.selected=true;
-        input.appendChild(o);
-      });
-    } else {
-      input=document.createElement("input");
-      input.type="text";
-      input.className="num-in";
-      input.value=profile[f.k] ?? "";
-      input.inputMode="decimal";
-    }
-    input.dataset.key=f.k;
-    input.addEventListener("input",onFieldChange);
-    wrap.appendChild(input);
-
-    if(f.k==="mortgage" || f.k==="rent"){
-      const note=document.createElement("div");
-      note.className="input-note";
-      note.textContent="Housing cost is shown for context. It is not used to rank states unless state-specific rent or home-price assumptions are added later.";
-      wrap.appendChild(note);
     }
 
-    grid.appendChild(wrap);
-  });
-}
+    // RMD is included inside iraW, not added separately.
+    if(rmd>iraW) iraW=rmd;
 
-function onFieldChange(e){
-  const k=e.target.dataset.key;
-  const def=FIELDS.find(x=>x.k===k);
-  if(!def) return;
-  if(def.type==="select") profile[k]=e.target.value;
-  else if(def.type==="int") profile[k]=parseIntSafe(e.target.value,0);
-  else if(def.type==="pct") profile[k]=parseFloatSafe(e.target.value,0);
-  else profile[k]=parseMoney(e.target.value);
+    const taxableSS=ss*fp.ssTaxablePct/100;
+    const ordinary=airbnbTaxable+ihss+iraW+conversion+taxableSS;
+    const ltcg=qd+realized;
+    const fed=fedTax(fp,ordinary,ltcg,year,age);
+    const st=stateTaxForYear(fp,state,ordinary,ss,iraW+conversion,qd,realized,airbnbTaxable+ihss);
+    const magi=ordinary+ltcg;
+    const cliff=inflate(fp.fpl2026,fp.generalInflation,year)*fp.acaCliffMultiple;
+    let aca=0;
+    if(age>=fp.retirementAge&&age<65){ aca=magi<=cliff?3500:25000; }
 
-  document.querySelectorAll("#formgrid label.f").forEach(l=>{
-    const kk=l.dataset.key;
-    const fd=FIELDS.find(x=>x.k===kk);
-    if(fd && fd.showIf) l.classList.toggle("hidden", !fd.showIf(profile));
-  });
-}
+    trad-=iraW+conversion;
+    roth+=conversion-rothW;
+    taxable-=taxW;
 
-function buildPresets(){
-  const box=document.getElementById("presets");
-  box.innerHTML="";
-  PRESETS.forEach(p=>{
-    const b=document.createElement("button");
-    b.className="preset-btn";
-    b.type="button";
-    b.textContent=p.label;
-    b.addEventListener("click",()=>{
-      selectedStates=[...p.states];
-      buildStateGrid();
-    });
-    box.appendChild(b);
-  });
-}
-
-function buildStateGrid(){
-  const box=document.getElementById("stateGrid");
-  box.innerHTML="";
-  BETA_STATES.forEach(abbr=>{
-    const s=STATE_DATA[abbr];
-    const lab=document.createElement("label");
-    lab.className="state-chip"+(selectedStates.includes(abbr)?" sel":"");
-    const cb=document.createElement("input");
-    cb.type="checkbox";
-    cb.checked=selectedStates.includes(abbr);
-    cb.addEventListener("change",()=>{
-      if(cb.checked){
-        if(selectedStates.length>=4){ cb.checked=false; toast("Choose up to 4 states."); return; }
-        selectedStates.push(abbr);
-      }else{
-        selectedStates=selectedStates.filter(x=>x!==abbr);
-      }
-      buildStateGrid();
-    });
-    const tx=document.createElement("span");
-    tx.textContent=`${abbr} — ${s.stateName}`;
-    lab.appendChild(cb);
-    lab.appendChild(tx);
-    box.appendChild(lab);
-  });
-  const c=document.getElementById("selCount");
-  c.textContent=`${selectedStates.length} state${selectedStates.length===1?"":"s"} selected`;
-  c.className="sel-count"+((selectedStates.length<2||selectedStates.length>4)?" bad":"");
-}
-
-function signed(n){
-  return n<0 ? `-${fmtUSD(Math.abs(n))}` : fmtUSD(n);
-}
-function numCell(n){
-  return `<td class="cell-num ${n<0?'neg':''}">${signed(n)}</td>`;
-}
-
-function generateRecommendation(p, rows){
-  const best = rows[0];
-  const worst = rows[rows.length-1];
-  const horizon = Math.max(1,p.horizon);
-  const annualDiff = worst.impact - best.impact;
-  const horizonDiff = worst.cumulativeImpact - best.cumulativeImpact;
-  const band = netWorthBand(p.netWorth);
-
-  const pureTax = [...rows].sort((a,b)=>a.incomeTax-b.incomeTax)[0];
-  const lowCost = [...rows].sort((a,b)=>(a.col+a.salesTax+a.hc)-(b.col+b.salesTax+b.hc))[0];
-  const hiddenCost = [...rows].sort((a,b)=>(b.propertyTax+b.ins+b.salesTax)-(a.propertyTax+a.ins+a.salesTax))[0];
-  const looksCheap = [...rows].filter(r=>!r.s.hasStateIncomeTax).sort((a,b)=>b.impact-a.impact)[0];
-  const looksPricey = [...rows].filter(r=>r.s.hasStateIncomeTax).sort((a,b)=>a.incomeTax-b.incomeTax)[0];
-
-  let html = `<span class="band">Net-worth band: ${band.label}</span>`;
-  html += `<p>Across the states you compared over a ${horizon}-year horizon, <strong>${best.s.stateName}</strong> comes out ahead, leaving an estimated <strong>${fmtUSD(best.projected)}</strong> versus <strong>${fmtUSD(worst.projected)}</strong> in ${worst.s.stateName} — a gap of about <strong>${fmtUSD(horizonDiff)}</strong>, or roughly <strong>${fmtUSD(annualDiff)}</strong> per year.</p>`;
-  html += `<p>At your net worth, the factors that matter most are ${band.focus}.</p>`;
-
-  html += `<h3>How the states stack up</h3><ul>`;
-  html += `<li><b>Best overall:</b> ${best.s.stateName}, with the lowest total annual state impact for your specific mix of income, housing, and spending.</li>`;
-  html += `<li><b>Best pure income-tax state:</b> ${pureTax.s.stateName}, at about ${fmtUSD(pureTax.incomeTax)}/yr of modeled state income tax.</li>`;
-  html += `<li><b>Lowest day-to-day cost:</b> ${lowCost.s.stateName}, based on cost of living, sales tax, and healthcare adjustments.</li>`;
-  html += `<li><b>Highest hidden-cost state:</b> ${hiddenCost.s.stateName}, where property tax, insurance, and sales tax add about ${fmtUSD(hiddenCost.propertyTax + hiddenCost.ins + hiddenCost.salesTax)}/yr.</li>`;
-  if(looksCheap && looksCheap.impact > best.impact * 1.05){
-    html += `<li><b>Looks cheap but is not:</b> ${looksCheap.s.stateName} has no state income tax, but still lands at about ${fmtUSD(looksCheap.impact)}/yr once property tax, insurance, and other state costs are counted.</li>`;
-  }
-  if(looksPricey && looksPricey.incomeTax < worst.incomeTax){
-    html += `<li><b>Looks expensive but retiree-friendly:</b> ${looksPricey.s.stateName} has an income tax on paper, but retirement-income treatment keeps your modeled state income tax to about ${fmtUSD(looksPricey.incomeTax)}/yr.</li>`;
-  }
-  html += `</ul>`;
-
-  html += `<h3>What's driving your result</h3>`;
-  const drivers = [];
-  if(p.iraWithdrawals > 60000){
-    drivers.push(`Because your plan uses ${fmtUSD(p.iraWithdrawals)}/yr from traditional retirement accounts, states that tax IRA and 401(k) withdrawals create a real annual drag and can materially reshape the ranking.`);
-  }
-  if(p.ownership === "own" && p.homeValue > 750000){
-    drivers.push(`Because your home value is ${fmtUSD(p.homeValue)}, property tax can matter as much as income tax. A no-income-tax state is not automatically the lowest-cost state once the property-tax bill is included.`);
-  }
-  const rothShare = p.rothWithdrawals / Math.max(1, calculateAnnualIncome(p));
-  if(rothShare > 0.4 || (p.rothBalance > p.iraBalance + p.brokerage && p.rothBalance > 0)){
-    drivers.push(`Because much of your retirement income comes from Roth accounts, state income tax matters less. Property tax, insurance, and cost of living become more important drivers.`);
-  }
-  if(p.netWorth > 5000000){
-    drivers.push(`Because your net worth is above $5 million, estate and inheritance tax rules deserve special attention. At this level, they can outweigh smaller annual tax differences.`);
-  }
-  if(p.ssIncome <= 0){
-    drivers.push(`You reported no Social Security income, so Social Security taxation is not a meaningful factor in this comparison.`);
-  }
-  if(p.ownership === "rent"){
-    drivers.push(`Because you rent, property tax and homeowners insurance are zero in every state, so cost of living, sales tax, and healthcare play a larger role. Your rent is treated as the same in every state and shown only for context.`);
-  }
-  if(!drivers.length){
-    drivers.push(`Your income is reasonably balanced across sources, so the ranking is driven by the combination of income tax, property tax, and cost of living rather than any single factor.`);
-  }
-  drivers.forEach(d => { html += `<p>${d}</p>`; });
-
-  const snap = calculateAdvancedSnapshot(p);
-  html += `<h3>Advanced FIRE context</h3>`;
-  html += `<p>Your v5 snapshot projects roughly <strong>${fmtUSD(snap.projectedLiquidAtRetire)}</strong> in liquid accounts at retirement age ${p.retireAge}, before considering future taxes, ACA subsidies, Roth conversions, RMD strategy, or spending withdrawals. Your rough pre-65 MAGI estimate is <strong>${fmtUSD(snap.estimatedAcaMagiAtRetire)}</strong> versus an inflated ACA cliff estimate of <strong>${fmtUSD(snap.acaCliffAtRetire)}</strong>.</p>`;
-  html += `<h3>Plain-English takeaway</h3><p>${narrativeTakeaway(p, rows)}</p>`;
-  return html;
-}
-
-function calculate(){
-  if(selectedStates.length<2 || selectedStates.length>4){
-    toast("Choose 2 to 4 beta states.");
-    return;
-  }
-  const rows = rankStates(profile, selectedStates);
-  lastRows = rows;
-  renderReport(profile, rows);
-}
-
-function renderReport(p, rows){
-  const rep=document.getElementById("report");
-  rep.className="";
-  const horizon = Math.max(1,p.horizon);
-  const best = rows[0];
-  const worst = rows[rows.length-1];
-  const housing = calculateHousingCost(p);
-
-  let h=`<div class="section"><h2><span class="n">3</span> Overview</h2>`;
-  h+=`<div class="cards">
-    <div class="card accent-good"><div class="k">Best state</div><div class="v">${esc(best.s.stateName)}</div><div class="sub">${fmtUSD(best.impact)}/yr annual state impact</div></div>
-    <div class="card accent-bad"><div class="k">Most expensive</div><div class="v">${esc(worst.s.stateName)}</div><div class="sub">${fmtUSD(worst.impact)}/yr annual state impact</div></div>
-    <div class="card accent-gold"><div class="k">Annual spread</div><div class="v">${fmtUSD(worst.impact-best.impact)}</div><div class="sub">Difference between highest and lowest annual state impact</div></div>
-    <div class="card accent-ink"><div class="k">Cumulative spread</div><div class="v">${fmtUSD(worst.cumulativeImpact-best.cumulativeImpact)}</div><div class="sub">Cumulative state impact, inflated annually</div></div>
-  </div></div>`;
-
-
-  const snap = calculateAdvancedSnapshot(p);
-  h+=`<div class="section"><h2><span class="n">4</span> Advanced FIRE Snapshot</h2>
-    <p class="hint">Uses your v5 assumptions. This section is a rough year-by-year input snapshot and does not drive the state ranking.</p>
-    <div class="cards">
-      <div class="card accent-good"><div class="k">Projected liquid assets at retirement</div><div class="v">${fmtUSD(snap.projectedLiquidAtRetire)}</div><div class="sub">401(k), Roth, HSA, and taxable after contributions/returns</div></div>
-      <div class="card accent-gold"><div class="k">Expenses at retirement</div><div class="v">${fmtUSD(snap.expensesAtRetire)}</div><div class="sub">${snap.yearsToRetire} years from now, using pre-55 expense growth</div></div>
-      <div class="card accent-ink"><div class="k">ACA cliff at retirement</div><div class="v">${fmtUSD(snap.acaCliffAtRetire)}</div><div class="sub">2026 FPL x ${p.acaCliff||0}, inflated at ${p.inflation||0}%/yr</div></div>
-      <div class="card accent-bad"><div class="k">Estimated pre-65 MAGI</div><div class="v">${fmtUSD(snap.estimatedAcaMagiAtRetire)}</div><div class="sub">Very rough: other income, rental cash flow, dividends, realized gains</div></div>
-    </div>
-    <div class="tablewrap" style="margin-top:14px"><table class="small-table"><thead><tr><th class="left">Advanced item</th><th>Estimated value</th><th class="left">How to read it</th></tr></thead><tbody>
-      <tr><td class="left">Traditional 401(k)/IRA at retirement</td><td class="cell-num">${fmtUSD(snap.iraAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.iraBalance)}, grows at ${p.retirementReturn||0}% with ${fmtUSD(p.contrib401k)}/yr contributions until retirement.</td></tr>
-      <tr><td class="left">Roth at retirement</td><td class="cell-num">${fmtUSD(snap.rothAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.rothBalance)}, grows at ${p.retirementReturn||0}% with ${fmtUSD(p.contribBackdoorRoth)}/yr backdoor Roth contributions.</td></tr>
-      <tr><td class="left">HSA at retirement</td><td class="cell-num">${fmtUSD(snap.hsaAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.hsaBalance)}, grows at ${p.retirementReturn||0}% with ${fmtUSD(p.contribHsa)}/yr contributions.</td></tr>
-      <tr><td class="left">Taxable at retirement</td><td class="cell-num">${fmtUSD(snap.taxableAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.brokerage)}, grows at ${p.taxableReturn||0}% with ${fmtUSD(p.contribTaxable)}/yr contributions.</td></tr>
-      <tr><td class="left">Airbnb equity today</td><td class="cell-num">${fmtUSD(snap.airbnbEquityNow)}</td><td class="left">Value today minus mortgage today. Airbnb cash flow is separately included as taxable income in state comparisons.</td></tr>
-      <tr><td class="left">Airbnb cash flow at retirement</td><td class="cell-num">${fmtUSD(snap.airbnbIncomeAtRetire)}</td><td class="left">Current net cash income grown at ${p.airbnbIncomeGrowth||0}%/yr.</td></tr>
-      <tr><td class="left">Social Security at claim age</td><td class="cell-num">${fmtUSD(snap.ssAtClaim)}</td><td class="left">Today's annual Social Security amount grown to claim age ${p.ssClaimAge||67}. This is not an SSA benefit estimate.</td></tr>
-      <tr><td class="left">Estimated first RMD at age ${p.rmdStartAge||73}</td><td class="cell-num">${fmtUSD(snap.estimatedFirstRmd)}</td><td class="left">Rough first-year RMD using a 26.5 divisor. Actual IRS divisor and future balances may differ.</td></tr>
-      <tr><td class="left">Future house purchase estimate</td><td class="cell-num">${fmtUSD(snap.housePriceAtPurchase)}</td><td class="left">Purchase price grown for ${p.housePurchaseYear||0} years at ${p.houseAppreciation||0}%/yr.</td></tr>
-    </tbody></table></div>
-    <div class="fire-note"><strong>Advanced mode note.</strong> This is a compact FIRE snapshot, not a full annual cash-flow simulator. It does not optimize withdrawals, tax brackets, ACA subsidies, Roth conversions, RMDs, or asset-location strategy. It gives the state tool better context from your v5 assumptions.</div>
-  </div>`;
-
-  h+=`<div class="section"><h2><span class="n">5</span> State Ranking</h2><p class="hint">Ranked by State-Adjusted Net Worth Estimate after total annual state impact, compounded at ${p.inflation||0}%/yr inflation over ${horizon} years.</p>`;
-  h+=`<div class="tablewrap"><table><thead><tr>
-    <th class="left">Rank</th><th class="left">State</th><th class="left">Modeling Confidence</th><th>Income Tax</th><th>Property Tax</th><th>Sales Tax</th><th>Insurance</th><th>Cost-of-Living Adj.</th><th>Healthcare Adj.</th><th class="left">Estate/Inh.</th><th>Annual State Impact</th><th>Cumulative State Impact, Inflated Annually</th><th>State-Adjusted Net Worth Estimate</th><th class="left">Verdict</th>
-  </tr></thead><tbody>`;
-  rows.forEach(r=>{
-    const rb = r.rank===1?"rank-1":(r.rank===rows.length?"rank-last":"rank-mid");
-    const estFlag = (r.s.hasEstateTax?"Estate":"")+(r.s.hasEstateTax&&r.s.hasInheritanceTax?" + ":"")+(r.s.hasInheritanceTax?"Inherit.":"");
-    const verds = verdictFor(p,r,rows).map(v=>`<span class="verdict ${v.c}">${v.t}</span>`).join(" ");
-    h+=`<tr>
-      <td class="left"><span class="rankbadge ${rb}">${r.rank}</span></td>
-      <td class="left statecell">${esc(r.s.stateName)}<span class="abbr">${r.s.abbreviation}</span>${r.s.estimated?'<span class="est-tag">EST</span>':''}</td>
-      <td class="left"><span class="conf conf-${r.confidence}">${r.confidence}</span></td>
-      <td class="cell-num">${fmtUSD(r.incomeTax)}</td>
-      <td class="cell-num">${fmtUSD(r.propertyTax)}</td>
-      <td class="cell-num">${fmtUSD(r.salesTax)}</td>
-      <td class="cell-num">${fmtUSD(r.ins)}</td>
-      ${numCell(r.col)}
-      ${numCell(r.hc)}
-      <td class="left">${estFlag?`<span class="yes">${estFlag}</span>`:`<span class="no">None</span>`}</td>
-      <td class="cell-num ${r.impact<0?'neg':''}"><strong>${signed(r.impact)}</strong></td>
-      <td class="cell-num ${r.cumulativeImpact<0?'neg':''}">${signed(r.cumulativeImpact)}</td>
-      <td class="cell-num"><strong>${fmtUSD(r.projected)}</strong></td>
-      <td class="left">${verds}</td>
-    </tr>`;
-  });
-  h+=`</tbody></table></div>`;
-  h+=`<div class="assump"><strong>How to read this:</strong> Housing cost is shown for context. It is not used to rank states unless state-specific rent or home-price assumptions are added later. ${housing>0?`Your annual housing cost is ${fmtUSD(housing)}.`:''}</div></div>`;
-
-  h+=`<div class="section"><h2><span class="n">6</span> Tax Treatment by State</h2>`;
-  h+=`<div class="tablewrap"><table><thead><tr>
-    <th class="left">State</th><th class="left">Modeling Confidence</th><th class="left">Social Security</th><th class="left">Pension</th><th class="left">IRA/401(k)</th><th class="left">Roth</th><th class="left">Interest/Div.</th><th class="left">LT Cap Gains</th><th class="left">Estate Tax</th><th class="left">Inheritance Tax</th>
-  </tr></thead><tbody>`;
-  rows.forEach(r=>{
-    const s=r.s;
-    const ss=ssDisplay(s.socialSecurityTaxTreatment), pen=incDisplay(s.pensionTaxTreatment), ira=incDisplay(s.ira401kTaxTreatment);
-    const idv = s.hasStateIncomeTax?['yes','Yes']:['no','No'];
-    const cg=cgDisplay(s.capitalGainsTaxTreatment);
-    const cell=(d)=>`<td class="left"><span class="${d[0]}">${d[1]}</span></td>`;
-    h+=`<tr><td class="left statecell">${esc(s.stateName)}<span class="abbr">${s.abbreviation}</span></td>
-      <td class="left"><span class="conf conf-${r.confidence}">${r.confidence}</span></td>
-      ${cell(ss)}${cell(pen)}${cell(ira)}<td class="left"><span class="no">No</span></td>${cell(idv)}${cell(cg)}
-      <td class="left"><span class="${s.hasEstateTax?'yes':'no'}">${s.hasEstateTax?'Yes':'No'}</span></td>
-      <td class="left"><span class="${s.hasInheritanceTax?'yes':'no'}">${s.hasInheritanceTax?'Yes':'No'}</span></td></tr>`;
-  });
-  h+=`</tbody></table></div>`;
-  h+=`<div class="assump"><strong>Modeling Confidence</strong> reflects how simplified the state model is, not whether every underlying tax rule has been manually verified.</div></div>`;
-
-  h+=`<div class="section no-print"><h2><span class="n">7</span> Red Flags by State</h2><div class="flagcols">`;
-  rows.forEach(r=>{
-    const flags=generateRedFlags(p,r.s,r);
-    h+=`<div class="flagcard"><h3>${esc(r.s.stateName)} <span class="score">${flags.length} flag${flags.length===1?"":"s"}</span></h3>`;
-    if(!flags.length){ h+=`<div class="noflags">● No major red flags for this profile.</div>`; }
-    else { flags.forEach(f=>{ h+=`<div class="flag sev-${f.sev}"><span class="dot"></span><span><span class="ft">${esc(f.title)}</span>${esc(f.text)}</span></div>`; }); }
-    h+=`</div>`;
-  });
-  h+=`</div></div>`;
-
-  h+=`<div class="section"><h2><span class="n">8</span> Recommendation</h2><div class="reco">${generateRecommendation(p,rows)}</div></div>`;
-
-  h+=`<div class="section"><div class="disclaimer"><strong>What this model does and doesn't include.</strong> It compares <em>state-level</em> costs only: state income tax, property tax, sales tax, insurance, and relative cost-of-living and healthcare differences, with annual costs inflated at ${p.inflation||0}%/yr. It does <strong>not</strong> model federal income tax, investment growth or returns, portfolio withdrawal sustainability, RMDs, Medicare/IRMAA surcharges, sequence-of-returns risk, home appreciation, or local/municipal income taxes. The state-adjusted net worth figure is a directional comparison between states, not a full retirement projection. Approximate 2025 tax-year rules, last reviewed ${DATA_VINTAGE}.</div></div>`;
-
-  rep.innerHTML=h;
-}
-
-function exportCSV(){
-  if(!lastRows){ toast("Calculate a comparison first."); return; }
-  const housingCash=calculateHousingCost(profile);
-  const head=["Rank","State","Modeling Confidence","State Income Tax","Property Tax","Sales Tax","Insurance","Cost-of-Living Adjustment","Healthcare Adjustment","Annual State Impact","Cumulative State Impact, Inflated Annually","State-Adjusted Net Worth Estimate","Annual Housing Cost","Projected Liquid Assets at Retirement","Estimated Pre-65 MAGI","Inflated ACA Cliff","Verdict"];
-  const esc2=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-  const lines=[head.map(esc2).join(",")];
-  lastRows.forEach(r=>{
-    lines.push([r.rank, r.s.stateName, r.confidence, Math.round(r.incomeTax), Math.round(r.propertyTax), Math.round(r.salesTax),
-      Math.round(r.ins), Math.round(r.col), Math.round(r.hc), Math.round(r.impact), Math.round(r.cumulativeImpact), Math.round(r.projected), Math.round(housingCash), Math.round(calculateAdvancedSnapshot(profile).projectedLiquidAtRetire), Math.round(calculateAdvancedSnapshot(profile).estimatedAcaMagiAtRetire), Math.round(calculateAdvancedSnapshot(profile).acaCliffAtRetire),
-      verdictFor(profile,r,lastRows).map(v=>v.t).join("; ")].map(esc2).join(","));
-  });
-  const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8;"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download="retirestate-optimizer-beta.csv";
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  toast("CSV exported.");
-}
-
-function fallbackCopy(text, onDone){
-  const ta = document.createElement("textarea");
-  ta.value = text;
-  ta.setAttribute("readonly", "");
-  ta.style.position = "fixed";
-  ta.style.top = "-9999px";
-  ta.style.left = "-9999px";
-  ta.style.opacity = "0";
-  document.body.appendChild(ta);
-  ta.focus();
-  ta.select();
-  ta.setSelectionRange(0, ta.value.length);
-  try{
-    const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
-    if(ok){
-      onDone();
+    let cashAvailable=externalCash+taxW+iraW+rothW;
+    let cashSurplus=cashAvailable-expenses;
+    let taxBill=fed+st+aca;
+    if(cashSurplus>=taxBill){
+      cashSurplus-=taxBill;
+      if(cashSurplus>0) taxable+=cashSurplus;
     }else{
-      toast("Copy failed. Select and copy manually.");
+      let remainingTax=taxBill-Math.max(0,cashSurplus);
+      cashSurplus=0;
+      const payTaxable=Math.min(taxable,remainingTax); taxable-=payTaxable; remainingTax-=payTaxable;
+      const payRoth=Math.min(roth,remainingTax); roth-=payRoth; remainingTax-=payRoth;
+      const payTrad=Math.min(trad,remainingTax); trad-=payTrad; remainingTax-=payTrad;
+      if(remainingTax>1) shortfall=true;
     }
-  }catch(e){
-    document.body.removeChild(ta);
-    toast("Copy failed. Select and copy manually.");
+
+    // If the house is purchased in the model, pay for it. It should not appear as free wealth.
+    const purchaseYear=fp.housePurchaseYear;
+    if(!housePurchased && purchaseYear!=null && purchaseYear>=0 && year>=purchaseYear && (fp.housePrice||0)>0){
+      let purchaseCost=inflate(fp.housePrice||0,fp.houseAppreciation||0,year-purchaseYear);
+      const fromTaxable=Math.min(taxable,purchaseCost); taxable-=fromTaxable; purchaseCost-=fromTaxable;
+      const fromRoth=Math.min(roth,purchaseCost); roth-=fromRoth; purchaseCost-=fromRoth;
+      const fromTrad=Math.min(trad,purchaseCost); trad-=fromTrad; purchaseCost-=fromTrad;
+      if(purchaseCost>1) shortfall=true;
+      housePurchased=true;
+    }
+
+    if(trad<0){shortfall=true;trad=0}
+    if(roth<0){shortfall=true;roth=0}
+    if(taxable<0){shortfall=true;taxable=0}
+
+    lifetimeFed+=fed;
+    lifetimeState+=st;
+    lifetimeAca+=aca;
+    totalConv+=conversion;
+    peakRmd=Math.max(peakRmd,rmd);
+
+    trad*=1+rRet;
+    roth*=1+rRet;
+    hsa*=1+rRet;
+    taxable*=1+rTax;
+
+    const airbnbValue=inflate(fp.airbnbValue||0,fp.airbnbIncomeGrowth||0,year);
+    const airbnbMortgage=Math.max(0,(fp.airbnbMortgage||0)*(1-year/Math.max(1,fp.airbnbMortgageYears||1)));
+    const airbnbEquity=Math.max(0,airbnbValue-airbnbMortgage);
+    const houseValue=housePurchased?inflate(fp.housePrice||0,fp.houseAppreciation||0,Math.max(0,year-(fp.housePurchaseYear||0))):0;
+    const liquid=trad+roth+hsa+taxable;
+    const total=liquid+airbnbEquity+houseValue;
+
+    rows.push({age,year,strategy,expenses,magi,fed,st,aca,conversion,rmd,trad,roth,hsa,taxable,liquid,airbnbEquity,houseValue,total,shortfall:spendingNeed>1||shortfall});
   }
+  return {strategy,rows,ending:rows[rows.length-1].total,lifetimeFed,lifetimeState,lifetimeAca,totalTax:lifetimeFed+lifetimeState,lifetimeAca,peakRmd,totalConv,shortfall:shortfall||rows.some(r=>r.shortfall)};
 }
-
-function copyReport(){
-  if(!lastRows){
-    toast("Calculate a comparison first.");
-    return;
-  }
-  const text = document.getElementById("report").innerText;
-  const done = ()=>toast("Report copied.");
-  if(navigator.clipboard && window.isSecureContext){
-    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
-  }else{
-    fallbackCopy(text, done);
-  }
-}
-
-function printReport(){
-  if(!lastRows){ toast("Calculate a comparison first."); return; }
-  window.print();
-}
-
-let toastTimer;
-function toast(msg){
-  const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2400);
-}
-function reset(){
-  profile={...SAMPLE}; selectedStates=["PA","NJ","FL","TX"];
-  buildForm(); buildStateGrid();
-  lastRows=null;
-  const rep=document.getElementById("report");
-  rep.className="empty-state";
-  rep.innerHTML=`<h2>Your comparison report will appear here</h2><p>Enter your details above, pick your states, and press <strong>Calculate Comparison</strong>.</p>`;
-  toast("Reset to sample profile.");
-}
-
-buildForm();
-buildPresets();
-buildStateGrid();
-document.getElementById("vintage").textContent = "Approximate 2025 tax-year rules, last reviewed " + DATA_VINTAGE + " · selected beta states only · v5 FIRE snapshot included · all calculations run locally in your browser";
-document.getElementById("btnCalc").addEventListener("click",calculate);
-document.getElementById("btnReset").addEventListener("click",reset);
-document.getElementById("btnCopy").addEventListener("click",copyReport);
-document.getElementById("btnCsv").addEventListener("click",exportCSV);
-document.getElementById("btnPrint").addEventListener("click",printReport);
-calculate();
+function runFire(){syncWinningStateToFireEngine();const strategies=["Taxable-first","Balanced","Roth conversion ladder","ACA-optimized"],res=strategies.map(s=>simulateStrategy(fireProfile,s));lastFire=res;renderFireReport(res)}
+function renderFireReport(res){const rep=document.getElementById("fireReport");rep.className="";const best=[...res].sort((a,b)=>b.ending-a.ending)[0],lowTax=[...res].sort((a,b)=>a.totalTax-b.totalTax)[0],lowAca=[...res].sort((a,b)=>a.lifetimeAca-b.lifetimeAca)[0],state=STATE_DATA[fireProfile.planningState];let h=`<div class="section"><h2><span class="n">B</span> Strategy Summary</h2><div class="cards"><div class="card accent-good"><div class="k">Best ending assets</div><div class="v">${best.strategy}</div><div class="sub">${fmtUSD(best.ending)} at age ${fireProfile.planningAge}</div></div><div class="card accent-gold"><div class="k">Lowest lifetime tax</div><div class="v">${lowTax.strategy}</div><div class="sub">${fmtUSD(lowTax.totalTax)} fed + state</div></div><div class="card accent-ink"><div class="k">Lowest ACA cost</div><div class="v">${lowAca.strategy}</div><div class="sub">${fmtUSD(lowAca.lifetimeAca)} before Medicare</div></div><div class="card accent-bad"><div class="k">Planning state</div><div class="v">${state.abbreviation}</div><div class="sub">${state.stateName}</div></div></div></div>`;
+h+=`<div class="section"><h2><span class="n">C</span> Strategy Comparison</h2><div class="tablewrap"><table><thead><tr><th class="left">Strategy</th><th>Ending Assets</th><th>Lifetime Fed Tax</th><th>Lifetime State Tax</th><th>Lifetime ACA Cost</th><th>Peak RMD</th><th>Total Roth Conversions</th><th class="left">Verdict</th></tr></thead><tbody>`;res.sort((a,b)=>b.ending-a.ending).forEach((r,i)=>{let verdict=i===0?"Best ending wealth":(r.strategy===lowAca.strategy?"Best ACA control":(r.strategy===lowTax.strategy?"Lowest tax":"Watch tradeoffs"));h+=`<tr><td class="left statecell">${r.strategy}</td><td class="cell-num"><strong>${fmtUSD(r.ending)}</strong></td><td class="cell-num">${fmtUSD(r.lifetimeFed)}</td><td class="cell-num">${fmtUSD(r.lifetimeState)}</td><td class="cell-num">${fmtUSD(r.lifetimeAca)}</td><td class="cell-num">${fmtUSD(r.peakRmd)}</td><td class="cell-num">${fmtUSD(r.totalConv)}</td><td class="left"><span class="verdict ${i===0?'v-good':'v-neutral'}">${verdict}</span></td></tr>`});h+=`</tbody></table></div><div class="assump"><strong>Model note:</strong> This is a directional year-by-year simulator. It uses simplified federal brackets, a simple state model, rough ACA costs, and does not optimize taxes with an iterative solver. Taxable-account withdrawals are not assigned embedded capital gains or basis, NIIT is not modeled, and long-term capital gains are modeled using a flat user-supplied rate instead of the full 0%/15%/20% tier system.</div></div>`;
+const show=best.rows.filter(r=>r.age>=fireProfile.retirementAge).filter((_,i)=>i<18);h+=`<div class="section"><h2><span class="n">D</span> Best Strategy Year-by-Year Preview</h2><p class="hint">First 18 retirement years for ${best.strategy}.</p><div class="tablewrap"><table><thead><tr><th>Age</th><th>Spending</th><th>MAGI</th><th>Fed Tax</th><th>State Tax</th><th>ACA</th><th>Roth Conv.</th><th>RMD</th><th>End Assets</th></tr></thead><tbody>`;show.forEach(r=>{h+=`<tr><td class="cell-num">${r.age}</td><td class="cell-num">${fmtUSD(r.expenses)}</td><td class="cell-num">${fmtUSD(r.magi)}</td><td class="cell-num">${fmtUSD(r.fed)}</td><td class="cell-num">${fmtUSD(r.st)}</td><td class="cell-num">${fmtUSD(r.aca)}</td><td class="cell-num">${fmtUSD(r.conversion)}</td><td class="cell-num">${fmtUSD(r.rmd)}</td><td class="cell-num"><strong>${fmtUSD(r.total)}</strong></td></tr>`});h+=`</tbody></table></div></div>`;
+h+=`<div class="section"><h2><span class="n">E</span> Warning Cards</h2><div class="flagcols">`;res.forEach(r=>{const flags=[];if(r.lifetimeAca>150000)flags.push(["med","ACA pressure",`${r.strategy} creates ${fmtUSD(r.lifetimeAca)} in modeled ACA cost before Medicare.`]);if(r.peakRmd>300000)flags.push(["high","RMD spike",`Peak modeled RMD reaches ${fmtUSD(r.peakRmd)}.`]);if(r.totalConv<50000&&r.peakRmd>300000)flags.push(["med","Roth conversion opportunity","Low conversions may leave a large future RMD problem."]);if(r.shortfall)flags.push(["high","Cash shortfall","This strategy had at least one year where spending could not be fully met from modeled accounts."]);h+=`<div class="flagcard"><h3>${r.strategy}</h3>`;if(!flags.length)h+=`<div class="noflags">● No major warning in this simplified run.</div>`;else flags.forEach(f=>h+=`<div class="flag sev-${f[0]}"><span class="dot"></span><span><span class="ft">${f[1]}</span>${f[2]}</span></div>`);h+=`</div>`});h+=`</div></div>`;
+h+=`<div class="section"><h2><span class="n">F</span> Plain-English Takeaway</h2><div class="reco"><p><strong>${best.strategy}</strong> produces the highest ending assets in this run. The main tradeoff is tax timing: Roth conversion paths may pay more tax earlier but can reduce future RMD pressure. ACA-optimized paths may protect pre-65 health subsidies but can leave more pre-tax money for later.</p><p>This tab should be used after the State Optimizer. The first tab picks the state. This tab tests the withdrawal path inside that state.</p></div></div>`;rep.innerHTML=h}
+function exportFireCSV(){if(!lastFire){toast("Run FIRE engine first.");return}const best=[...lastFire].sort((a,b)=>b.ending-a.ending)[0],head=["Strategy","Age","Spending","MAGI","Fed Tax","State Tax","ACA","Roth Conversion","RMD","Traditional","Roth","HSA","Taxable","Liquid Assets","Airbnb Equity","House Value","Total Assets"],lines=[head.join(",")];best.rows.forEach(r=>lines.push([best.strategy,r.age,Math.round(r.expenses),Math.round(r.magi),Math.round(r.fed),Math.round(r.st),Math.round(r.aca),Math.round(r.conversion),Math.round(r.rmd),Math.round(r.trad),Math.round(r.roth),Math.round(r.hsa),Math.round(r.taxable),Math.round(r.liquid||0),Math.round(r.airbnbEquity||0),Math.round(r.houseValue||0),Math.round(r.total)].join(",")));downloadCSV(lines.join("\n"),"retirestate-fire-engine.csv")}
+function setupTabs(){document.querySelectorAll(".tab-btn").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));btn.classList.add("active");document.getElementById(btn.dataset.tab).classList.add("active");if(btn.dataset.tab==="fireTab")syncWinningStateToFireEngine()}))}
+// init
+buildStateForm();buildPresets();buildStateGrid();buildFireForm();setupTabs();document.getElementById("vintage").textContent="User-supplied v5 FIRE planning values · selected beta states only · all calculations run locally in your browser";document.getElementById("btnCalc").onclick=calculate;document.getElementById("btnReset").onclick=reset;document.getElementById("btnCopy").onclick=()=>copyText(document.getElementById("stateReport").innerText);document.getElementById("btnCsv").onclick=exportCSV;document.getElementById("btnPrint").onclick=printReport;document.getElementById("btnRunFire").onclick=runFire;document.getElementById("btnFireCsv").onclick=exportFireCSV;document.getElementById("btnCopyFire").onclick=()=>copyText(document.getElementById("fireReport").innerText);calculate();runFire();
 </script>
 </body>
 </html>
