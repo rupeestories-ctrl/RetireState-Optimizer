@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RetireState Optimizer, Beta</title>
+<title>RetireState Optimizer, Beta + FIRE Snapshot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  font-family:"IBM Plex Sans",-apple-system,sans-serif;
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:var(--paper);
   color:var(--ink);
   line-height:1.5;
@@ -39,30 +39,68 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 .num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
-h1,h2,h3{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0;}
+h1,h2,h3{font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:700;letter-spacing:-.03em;margin:0;}
 a{color:var(--accent)}
 
-.wrap{max-width:1180px;margin:0 auto;padding:0 22px 70px}
+.wrap{max-width:1180px;margin:0 auto;padding:32px 22px 70px}
 header.site{
-  background:linear-gradient(180deg,#0f2540 0%,#163357 100%);
-  color:#f6f4ee;border-bottom:3px solid var(--accent);
+  position:relative;
+  background:
+    radial-gradient(circle at 18% 10%,rgba(166,124,31,.18),transparent 28%),
+    linear-gradient(120deg,#2f2e29 0%,#1d2330 48%,#0f2b4b 100%);
+  color:#f6f4ee;
+  border-bottom:2px solid rgba(166,124,31,.45);
+  overflow:hidden;
 }
-.site-inner{max-width:1180px;margin:0 auto;padding:30px 22px 26px}
-.brandrow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-.brandrow .badge{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-soft);border:1px solid rgba(243,234,210,.35);padding:3px 9px;border-radius:999px}
-header.site h1{font-size:30px;color:#fff;line-height:1.1}
-header.site p{margin:10px 0 0;max-width:820px;color:#c9d4e2;font-size:14.5px}
-header.site p.vintage{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#8fa1b8;margin-top:8px;letter-spacing:.02em}
+header.site:after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0 0;
+  height:1px;
+  background:rgba(255,255,255,.2);
+}
+.site-inner{max-width:100%;margin:0 auto;padding:54px 30px 78px;position:relative}
+.brandrow{
+  position:absolute;
+  top:28px;left:30px;right:30px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+  color:#e0ad3f;
+}
+.brandrow .brand-left,.brandrow .brand-right{white-space:nowrap}
+.brandrow .badge{display:none}
+.hero-copy{max-width:980px;margin:0 auto;text-align:center;padding-top:22px}
+header.site h1{font-size:clamp(42px,5vw,68px);color:#fff;line-height:.98;font-weight:700;letter-spacing:-.055em}
+header.site h1 .gold{color:#e0ad3f}
+header.site p{margin:18px auto 0;max-width:860px;color:#d3d7df;font-size:18px;line-height:1.45;font-weight:600}
+header.site p.vintage{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:#9aa8ba;margin-top:18px;letter-spacing:.04em;font-weight:500}
+.hero-pills{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:22px}
+.hero-pill{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);
+  color:#c8d0dc;
+  border-radius:999px;
+  padding:8px 14px;
+  font-size:14px;
+  font-weight:700;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+@media (max-width:720px){
+  .site-inner{padding:48px 18px 58px}
+  .brandrow{position:static;margin-bottom:26px;justify-content:center;flex-direction:column;font-size:11px;gap:8px}
+  header.site p{font-size:15px}
+}
 
 .section{margin-top:26px}
-.section > h2{font-size:20px;display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.section > h2 .n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 7px;font-weight:500}
+.section > h2{font-size:22px;display:flex;align-items:center;gap:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.22em;color:#1c3a5e}
+.section > h2 .n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 7px;font-weight:700;letter-spacing:0}
 .section .hint{color:var(--muted);font-size:13px;margin:2px 0 14px}
 
-.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:22px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(15,37,64,.08);padding:28px 34px}
 
 .formgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px 18px}
-.fieldgroup-title{grid-column:1/-1;font-family:"IBM Plex Serif",serif;font-size:14px;color:var(--ink-2);font-weight:600;border-bottom:1px solid var(--line-2);padding-bottom:6px;margin-top:6px}
+.fieldgroup-title{grid-column:1/-1;font-family:"IBM Plex Sans",sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:700;border-bottom:1px dashed var(--line);padding-bottom:8px;margin-top:10px}
 .fieldgroup-title:first-child{margin-top:0}
 label.f{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--neutral);font-weight:500}
 label.f .lbl{display:flex;align-items:center;gap:6px}
@@ -101,8 +139,8 @@ label.f input:focus,label.f select:focus{outline:none;border-color:var(--ink-2);
 
 .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .btn{font-family:inherit;font-size:14px;font-weight:600;border-radius:9px;padding:11px 18px;cursor:pointer;border:1px solid transparent;transition:.15s}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#8c681a}
+.btn-primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn-primary:hover{background:#132f52}
 .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
 .btn-ghost:hover{border-color:var(--ink-2)}
 .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:var(--shadow)}
@@ -181,6 +219,20 @@ tbody tr:hover{background:var(--accent-soft)}
 #report.empty-state{text-align:center;color:var(--muted);padding:40px 20px;border:1px dashed var(--line);border-radius:14px;background:#fbfaf6}
 #report.empty-state h2{color:var(--ink-2);margin-bottom:8px}
 
+
+.fire-note{
+  margin-top:10px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-left:4px solid var(--ink-2);
+  border-radius:10px;
+  background:#fbfaf6;
+  font-size:12.75px;
+  color:var(--neutral);
+  line-height:1.55;
+}
+.small-table td,.small-table th{white-space:normal;}
+
 @media print{
   body{background:#fff;font-size:11.5px}
   header.site{background:#fff !important;color:#000;border-bottom:2px solid #000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -201,11 +253,19 @@ tbody tr:hover{background:var(--accent-soft)}
 <header class="site">
   <div class="site-inner">
     <div class="brandrow">
-      <h1>RetireState Optimizer, Beta</h1>
-      <span class="badge">Education only</span>
+      <span class="brand-left">R/RUPEESTORIES</span>
+      <span class="brand-right">RUPEESTORIES.SUBSTACK.COM</span>
     </div>
-    <p>Compare 2 to 4 states on retirement taxes, Social Security treatment, property taxes, insurance, healthcare, and cost-of-living differences. This is a state-level planning model, not a full retirement projection.</p>
-    <p class="vintage" id="vintage"></p>
+    <div class="hero-copy">
+      <h1>RetireState <span class="gold">Optimizer</span></h1>
+      <p>Compare retirement taxes, Social Security treatment, property taxes, insurance, healthcare, and cost-of-living differences before you choose your state.</p>
+      <div class="hero-pills">
+        <span class="hero-pill">🔒 No login</span>
+        <span class="hero-pill">🧪 Beta model</span>
+        <span class="hero-pill">Runs in your browser</span>
+      </div>
+      <p class="vintage" id="vintage"></p>
+    </div>
   </div>
 </header>
 
@@ -246,11 +306,7 @@ tbody tr:hover{background:var(--accent-soft)}
 
   <div class="disclaimer">
     <strong>Disclaimer.</strong> This tool is for education and planning only. It is not tax, legal, or financial advice.
-    It compares <strong>state-level</strong> costs only and does <strong>not</strong> model federal income tax, investment growth,
-    portfolio withdrawal sustainability, RMDs, Medicare/IRMAA surcharges, sequence-of-returns risk, home appreciation, or
-    local/municipal income taxes. Selected beta states use simplified tax assumptions. State rules can vary by age, income,
-    filing status, and local jurisdiction. Each state carries a modeling confidence rating. Approximate 2025 tax-year rules,
-    last reviewed May 2026.
+    It compares <strong>state-level</strong> costs and includes a simplified FIRE snapshot. It does <strong>not</strong> replace a federal tax return, full retirement plan, ACA estimate, RMD plan, or estate plan. Portfolio returns, RMDs, ACA, home appreciation, and federal tax assumptions are simplified. Selected beta states use simplified tax assumptions. State rules can vary by age, income, filing status, and local jurisdiction. Each state carries a modeling confidence rating. Approximate 2025 tax-year rules, last reviewed May 2026.
   </div>
 </div>
 
@@ -340,7 +396,44 @@ function inclusionFraction(treatment){
 const FILING_FACTOR = { single:0.5, mfs:0.5, hoh:0.6, mfj:1.0 };
 
 function calculateAnnualIncome(p){
-  return p.ssIncome + p.pension + p.iraWithdrawals + p.rothWithdrawals + p.dividends + p.ltcg;
+  return p.ssIncome + p.pension + p.iraWithdrawals + p.rothWithdrawals + p.dividends + p.ltcg + (p.otherIncome||0) + (p.airbnbIncome||0);
+}
+function fvLumpAndContrib(start, annualContrib, ratePct, years){
+  const r = Math.max(-0.99, (ratePct||0)/100);
+  const n = Math.max(0, years||0);
+  let v = Math.max(0,start||0);
+  for(let i=0;i<n;i++) v = v*(1+r) + Math.max(0,annualContrib||0);
+  return v;
+}
+function compound(value, ratePct, years){
+  return Math.max(0,value||0) * Math.pow(1 + Math.max(-0.99,(ratePct||0)/100), Math.max(0,years||0));
+}
+function calculateAdvancedSnapshot(p){
+  const yearsToRetire = Math.max(0, (p.retireAge||0) - (p.age||0));
+  const yearsToClaim = Math.max(0, (p.ssClaimAge||67) - (p.age||0));
+  const yearsToRmd = Math.max(0, (p.rmdStartAge||73) - (p.age||0));
+  const retReturn = p.retirementReturn || 0;
+  const taxableReturn = p.taxableReturn || 0;
+  const iraAtRetire = fvLumpAndContrib(p.iraBalance, p.contrib401k, retReturn, yearsToRetire);
+  const rothAtRetire = fvLumpAndContrib(p.rothBalance, p.contribBackdoorRoth, retReturn, yearsToRetire);
+  const hsaAtRetire = fvLumpAndContrib(p.hsaBalance, p.contribHsa, retReturn, yearsToRetire);
+  const taxableAtRetire = fvLumpAndContrib(p.brokerage, p.contribTaxable, taxableReturn, yearsToRetire);
+  const projectedLiquidAtRetire = iraAtRetire + rothAtRetire + hsaAtRetire + taxableAtRetire;
+  const expensesAtRetire = compound(p.spending, p.expenseGrowthPre55 || p.inflation || 0, yearsToRetire);
+  const airbnbIncomeAtRetire = compound(p.airbnbIncome, p.airbnbIncomeGrowth || 0, yearsToRetire);
+  const otherIncomeAtRetire = compound(p.otherIncome, p.inflation || 0, yearsToRetire);
+  const ssAtClaim = compound(p.ssIncome, p.inflation || 0, yearsToClaim);
+  const acaCliffNow = (p.fpl2026||0) * (p.acaCliff||0);
+  const acaCliffAtRetire = compound(acaCliffNow, p.inflation || 0, yearsToRetire);
+  const taxableDividendsAtRetire = taxableAtRetire * ((p.qualifiedDividendYield||0)/100);
+  const taxableRealizedGainsAtRetire = taxableAtRetire * ((p.taxableReturn||0)/100) * ((p.taxableRealizationRate||0)/100);
+  const estimatedAcaMagiAtRetire = airbnbIncomeAtRetire + otherIncomeAtRetire + taxableDividendsAtRetire + taxableRealizedGainsAtRetire + Math.max(0,p.iraWithdrawals||0);
+  const airbnbEquityNow = Math.max(0,(p.airbnbValue||0) - (p.airbnbMortgage||0));
+  const airbnbMortgagePayoffAnnual = (p.airbnbMortgageYears||0) > 0 ? (p.airbnbMortgage||0)/(p.airbnbMortgageYears||1) : 0;
+  const housePriceAtPurchase = (p.housePurchaseYear||0) > 0 ? compound(p.housePurchasePrice||0, p.houseAppreciation||0, p.housePurchaseYear||0) : 0;
+  const iraAtRmd = fvLumpAndContrib(p.iraBalance, p.contrib401k, retReturn, yearsToRmd);
+  const estimatedFirstRmd = iraAtRmd / 26.5;
+  return {yearsToRetire, yearsToClaim, yearsToRmd, iraAtRetire, rothAtRetire, hsaAtRetire, taxableAtRetire, projectedLiquidAtRetire, expensesAtRetire, airbnbIncomeAtRetire, otherIncomeAtRetire, ssAtClaim, acaCliffAtRetire, estimatedAcaMagiAtRetire, taxableDividendsAtRetire, taxableRealizedGainsAtRetire, airbnbEquityNow, airbnbMortgagePayoffAnnual, housePriceAtPurchase, iraAtRmd, estimatedFirstRmd};
 }
 function calculateStateTaxableIncome(p, s){
   if(!s.hasStateIncomeTax) return 0;
@@ -349,6 +442,7 @@ function calculateStateTaxableIncome(p, s){
   taxable += inclusionFraction(s.pensionTaxTreatment) * p.pension;
   taxable += inclusionFraction(s.ira401kTaxTreatment) * p.iraWithdrawals;
   taxable += p.dividends;
+  taxable += (p.otherIncome||0) + (p.airbnbIncome||0);
   if(s.capitalGainsTaxTreatment === "taxed as income") taxable += p.ltcg;
   else if(s.capitalGainsTaxTreatment === "partially taxed") taxable += 0.5 * p.ltcg;
   return Math.max(0, taxable);
@@ -574,17 +668,61 @@ const FIELDS = [
   {k:"homeValue",label:"Home value",type:"money",showIf:p=>p.ownership==="own"},
   {k:"rent",label:"Annual rent",type:"money",showIf:p=>p.ownership==="rent"},
   {k:"mortgage",label:"Annual mortgage payment (optional)",type:"money",showIf:p=>p.ownership==="own"},
+  {group:"Advanced FIRE inputs (optional, v5 assumptions)"},
+  {k:"spouseAge",label:"Spouse current age",type:"int"},
+  {k:"momAge",label:"Mom current age",type:"int"},
+  {k:"momDeathYears",label:"Mom death year #",type:"int"},
+  {k:"ssClaimAge",label:"Social Security claim age",type:"int"},
+  {k:"rmdStartAge",label:"RMD start age",type:"int"},
+  {k:"hsaBalance",label:"HSA balance",type:"money"},
+  {k:"retirementReturn",label:"401(k)+Roth+HSA return (%)",type:"pct"},
+  {k:"taxableReturn",label:"Taxable return (%)",type:"pct"},
+  {k:"bracketInflation",label:"Tax bracket inflation (%)",type:"pct"},
+  {k:"contrib401k",label:"401(k) contribution / yr",type:"money"},
+  {k:"contribBackdoorRoth",label:"Backdoor Roth / yr",type:"money"},
+  {k:"contribHsa",label:"HSA contribution / yr",type:"money"},
+  {k:"contribTaxable",label:"Taxable contribution / yr",type:"money"},
+  {k:"expenseGrowthPre55",label:"Expense growth before 55 (%)",type:"pct"},
+  {k:"taperStartAge",label:"Expense taper start age",type:"int"},
+  {k:"taperEndAge",label:"Expense taper end age",type:"int"},
+  {k:"expenseGrowth65Plus",label:"Expense growth 65+ (%)",type:"pct"},
+  {k:"airbnbValue",label:"Airbnb value today",type:"money"},
+  {k:"airbnbMortgage",label:"Airbnb mortgage today",type:"money"},
+  {k:"airbnbIncome",label:"Airbnb net cash income / yr",type:"money"},
+  {k:"airbnbIncomeGrowth",label:"Airbnb income growth (%)",type:"pct"},
+  {k:"airbnbMortgageYears",label:"Airbnb mortgage years",type:"int"},
+  {k:"airbnbTaxShieldYears",label:"Airbnb tax shield years",type:"int"},
+  {k:"otherIncome",label:"Other income today / yr",type:"money"},
+  {k:"housePurchaseYear",label:"House purchase year #",type:"int"},
+  {k:"housePurchasePrice",label:"Future house price",type:"money"},
+  {k:"houseAppreciation",label:"House appreciation (%)",type:"pct"},
+  {k:"fedStdDeduction",label:"Federal standard deduction",type:"money"},
+  {k:"qualifiedDividendYield",label:"Qualified dividend yield (%)",type:"pct"},
+  {k:"taxableRealizationRate",label:"Taxable realization rate (%)",type:"pct"},
+  {k:"ssTaxablePct",label:"SS taxable assumption (%)",type:"pct"},
+  {k:"fpl2026",label:"2026 FPL household of 2",type:"money"},
+  {k:"acaCliff",label:"ACA cliff multiple",type:"pct"},
   {group:"Optional costs"},
   {k:"healthcare",label:"Annual healthcare premium (optional)",type:"money"},
   {k:"insurance",label:"Annual property insurance (optional)",type:"money",showIf:p=>p.ownership==="own"}
 ];
 
 const SAMPLE = {
-  filing:"mfj", age:55, retireAge:55, horizon:25, inflation:2.5,
-  netWorth:3500000, brokerage:900000, iraBalance:1300000, rothBalance:200000, cash:100000,
-  ssIncome:60000, pension:0, iraWithdrawals:80000, rothWithdrawals:0, dividends:30000, ltcg:20000,
-  spending:150000, ownership:"own", homeValue:1000000, rent:0, mortgage:0,
-  healthcare:16000, insurance:0
+  filing:"mfj", age:45, spouseAge:40, momAge:70, momDeathYears:16,
+  retireAge:47, horizon:40, inflation:5, bracketInflation:2.5,
+  ssClaimAge:67, rmdStartAge:73,
+  netWorth:7000000, brokerage:3230000, iraBalance:1600000, rothBalance:1100000, hsaBalance:70000, cash:0,
+  ssIncome:72000, pension:0, iraWithdrawals:0, rothWithdrawals:0, dividends:0, ltcg:0,
+  otherIncome:13200,
+  spending:100000, ownership:"own", homeValue:1000000, rent:0, mortgage:0,
+  healthcare:16000, insurance:0,
+  retirementReturn:10, taxableReturn:8,
+  contrib401k:30500, contribBackdoorRoth:7000, contribHsa:8500, contribTaxable:104000,
+  expenseGrowthPre55:10, taperStartAge:55, taperEndAge:65, expenseGrowth65Plus:5,
+  airbnbValue:1400000, airbnbMortgage:400000, airbnbIncome:50000, airbnbIncomeGrowth:4, airbnbMortgageYears:15, airbnbTaxShieldYears:15,
+  housePurchaseYear:3, housePurchasePrice:1000000, houseAppreciation:3,
+  fedStdDeduction:31500, qualifiedDividendYield:1.5, taxableRealizationRate:10, ssTaxablePct:85,
+  fpl2026:21150, acaCliff:4
 };
 
 const PRESETS = [
@@ -784,6 +922,9 @@ function generateRecommendation(p, rows){
   }
   drivers.forEach(d => { html += `<p>${d}</p>`; });
 
+  const snap = calculateAdvancedSnapshot(p);
+  html += `<h3>Advanced FIRE context</h3>`;
+  html += `<p>Your v5 snapshot projects roughly <strong>${fmtUSD(snap.projectedLiquidAtRetire)}</strong> in liquid accounts at retirement age ${p.retireAge}, before considering future taxes, ACA subsidies, Roth conversions, RMD strategy, or spending withdrawals. Your rough pre-65 MAGI estimate is <strong>${fmtUSD(snap.estimatedAcaMagiAtRetire)}</strong> versus an inflated ACA cliff estimate of <strong>${fmtUSD(snap.acaCliffAtRetire)}</strong>.</p>`;
   html += `<h3>Plain-English takeaway</h3><p>${narrativeTakeaway(p, rows)}</p>`;
   return html;
 }
@@ -814,7 +955,31 @@ function renderReport(p, rows){
     <div class="card accent-ink"><div class="k">Cumulative spread</div><div class="v">${fmtUSD(worst.cumulativeImpact-best.cumulativeImpact)}</div><div class="sub">Cumulative state impact, inflated annually</div></div>
   </div></div>`;
 
-  h+=`<div class="section"><h2><span class="n">4</span> State Ranking</h2><p class="hint">Ranked by State-Adjusted Net Worth Estimate after total annual state impact, compounded at ${p.inflation||0}%/yr inflation over ${horizon} years.</p>`;
+
+  const snap = calculateAdvancedSnapshot(p);
+  h+=`<div class="section"><h2><span class="n">4</span> Advanced FIRE Snapshot</h2>
+    <p class="hint">Uses your v5 assumptions. This section is a rough year-by-year input snapshot and does not drive the state ranking.</p>
+    <div class="cards">
+      <div class="card accent-good"><div class="k">Projected liquid assets at retirement</div><div class="v">${fmtUSD(snap.projectedLiquidAtRetire)}</div><div class="sub">401(k), Roth, HSA, and taxable after contributions/returns</div></div>
+      <div class="card accent-gold"><div class="k">Expenses at retirement</div><div class="v">${fmtUSD(snap.expensesAtRetire)}</div><div class="sub">${snap.yearsToRetire} years from now, using pre-55 expense growth</div></div>
+      <div class="card accent-ink"><div class="k">ACA cliff at retirement</div><div class="v">${fmtUSD(snap.acaCliffAtRetire)}</div><div class="sub">2026 FPL x ${p.acaCliff||0}, inflated at ${p.inflation||0}%/yr</div></div>
+      <div class="card accent-bad"><div class="k">Estimated pre-65 MAGI</div><div class="v">${fmtUSD(snap.estimatedAcaMagiAtRetire)}</div><div class="sub">Very rough: other income, rental cash flow, dividends, realized gains</div></div>
+    </div>
+    <div class="tablewrap" style="margin-top:14px"><table class="small-table"><thead><tr><th class="left">Advanced item</th><th>Estimated value</th><th class="left">How to read it</th></tr></thead><tbody>
+      <tr><td class="left">Traditional 401(k)/IRA at retirement</td><td class="cell-num">${fmtUSD(snap.iraAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.iraBalance)}, grows at ${p.retirementReturn||0}% with ${fmtUSD(p.contrib401k)}/yr contributions until retirement.</td></tr>
+      <tr><td class="left">Roth at retirement</td><td class="cell-num">${fmtUSD(snap.rothAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.rothBalance)}, grows at ${p.retirementReturn||0}% with ${fmtUSD(p.contribBackdoorRoth)}/yr backdoor Roth contributions.</td></tr>
+      <tr><td class="left">HSA at retirement</td><td class="cell-num">${fmtUSD(snap.hsaAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.hsaBalance)}, grows at ${p.retirementReturn||0}% with ${fmtUSD(p.contribHsa)}/yr contributions.</td></tr>
+      <tr><td class="left">Taxable at retirement</td><td class="cell-num">${fmtUSD(snap.taxableAtRetire)}</td><td class="left">Starts at ${fmtUSD(p.brokerage)}, grows at ${p.taxableReturn||0}% with ${fmtUSD(p.contribTaxable)}/yr contributions.</td></tr>
+      <tr><td class="left">Airbnb equity today</td><td class="cell-num">${fmtUSD(snap.airbnbEquityNow)}</td><td class="left">Value today minus mortgage today. Airbnb cash flow is separately included as taxable income in state comparisons.</td></tr>
+      <tr><td class="left">Airbnb cash flow at retirement</td><td class="cell-num">${fmtUSD(snap.airbnbIncomeAtRetire)}</td><td class="left">Current net cash income grown at ${p.airbnbIncomeGrowth||0}%/yr.</td></tr>
+      <tr><td class="left">Social Security at claim age</td><td class="cell-num">${fmtUSD(snap.ssAtClaim)}</td><td class="left">Today's annual Social Security amount grown to claim age ${p.ssClaimAge||67}. This is not an SSA benefit estimate.</td></tr>
+      <tr><td class="left">Estimated first RMD at age ${p.rmdStartAge||73}</td><td class="cell-num">${fmtUSD(snap.estimatedFirstRmd)}</td><td class="left">Rough first-year RMD using a 26.5 divisor. Actual IRS divisor and future balances may differ.</td></tr>
+      <tr><td class="left">Future house purchase estimate</td><td class="cell-num">${fmtUSD(snap.housePriceAtPurchase)}</td><td class="left">Purchase price grown for ${p.housePurchaseYear||0} years at ${p.houseAppreciation||0}%/yr.</td></tr>
+    </tbody></table></div>
+    <div class="fire-note"><strong>Advanced mode note.</strong> This is a compact FIRE snapshot, not a full annual cash-flow simulator. It does not optimize withdrawals, tax brackets, ACA subsidies, Roth conversions, RMDs, or asset-location strategy. It gives the state tool better context from your v5 assumptions.</div>
+  </div>`;
+
+  h+=`<div class="section"><h2><span class="n">5</span> State Ranking</h2><p class="hint">Ranked by State-Adjusted Net Worth Estimate after total annual state impact, compounded at ${p.inflation||0}%/yr inflation over ${horizon} years.</p>`;
   h+=`<div class="tablewrap"><table><thead><tr>
     <th class="left">Rank</th><th class="left">State</th><th class="left">Modeling Confidence</th><th>Income Tax</th><th>Property Tax</th><th>Sales Tax</th><th>Insurance</th><th>Cost-of-Living Adj.</th><th>Healthcare Adj.</th><th class="left">Estate/Inh.</th><th>Annual State Impact</th><th>Cumulative State Impact, Inflated Annually</th><th>State-Adjusted Net Worth Estimate</th><th class="left">Verdict</th>
   </tr></thead><tbody>`;
@@ -842,7 +1007,7 @@ function renderReport(p, rows){
   h+=`</tbody></table></div>`;
   h+=`<div class="assump"><strong>How to read this:</strong> Housing cost is shown for context. It is not used to rank states unless state-specific rent or home-price assumptions are added later. ${housing>0?`Your annual housing cost is ${fmtUSD(housing)}.`:''}</div></div>`;
 
-  h+=`<div class="section"><h2><span class="n">5</span> Tax Treatment by State</h2>`;
+  h+=`<div class="section"><h2><span class="n">6</span> Tax Treatment by State</h2>`;
   h+=`<div class="tablewrap"><table><thead><tr>
     <th class="left">State</th><th class="left">Modeling Confidence</th><th class="left">Social Security</th><th class="left">Pension</th><th class="left">IRA/401(k)</th><th class="left">Roth</th><th class="left">Interest/Div.</th><th class="left">LT Cap Gains</th><th class="left">Estate Tax</th><th class="left">Inheritance Tax</th>
   </tr></thead><tbody>`;
@@ -861,7 +1026,7 @@ function renderReport(p, rows){
   h+=`</tbody></table></div>`;
   h+=`<div class="assump"><strong>Modeling Confidence</strong> reflects how simplified the state model is, not whether every underlying tax rule has been manually verified.</div></div>`;
 
-  h+=`<div class="section no-print"><h2><span class="n">6</span> Red Flags by State</h2><div class="flagcols">`;
+  h+=`<div class="section no-print"><h2><span class="n">7</span> Red Flags by State</h2><div class="flagcols">`;
   rows.forEach(r=>{
     const flags=generateRedFlags(p,r.s,r);
     h+=`<div class="flagcard"><h3>${esc(r.s.stateName)} <span class="score">${flags.length} flag${flags.length===1?"":"s"}</span></h3>`;
@@ -871,7 +1036,7 @@ function renderReport(p, rows){
   });
   h+=`</div></div>`;
 
-  h+=`<div class="section"><h2><span class="n">7</span> Recommendation</h2><div class="reco">${generateRecommendation(p,rows)}</div></div>`;
+  h+=`<div class="section"><h2><span class="n">8</span> Recommendation</h2><div class="reco">${generateRecommendation(p,rows)}</div></div>`;
 
   h+=`<div class="section"><div class="disclaimer"><strong>What this model does and doesn't include.</strong> It compares <em>state-level</em> costs only: state income tax, property tax, sales tax, insurance, and relative cost-of-living and healthcare differences, with annual costs inflated at ${p.inflation||0}%/yr. It does <strong>not</strong> model federal income tax, investment growth or returns, portfolio withdrawal sustainability, RMDs, Medicare/IRMAA surcharges, sequence-of-returns risk, home appreciation, or local/municipal income taxes. The state-adjusted net worth figure is a directional comparison between states, not a full retirement projection. Approximate 2025 tax-year rules, last reviewed ${DATA_VINTAGE}.</div></div>`;
 
@@ -881,12 +1046,12 @@ function renderReport(p, rows){
 function exportCSV(){
   if(!lastRows){ toast("Calculate a comparison first."); return; }
   const housingCash=calculateHousingCost(profile);
-  const head=["Rank","State","Modeling Confidence","State Income Tax","Property Tax","Sales Tax","Insurance","Cost-of-Living Adjustment","Healthcare Adjustment","Annual State Impact","Cumulative State Impact, Inflated Annually","State-Adjusted Net Worth Estimate","Annual Housing Cost","Verdict"];
+  const head=["Rank","State","Modeling Confidence","State Income Tax","Property Tax","Sales Tax","Insurance","Cost-of-Living Adjustment","Healthcare Adjustment","Annual State Impact","Cumulative State Impact, Inflated Annually","State-Adjusted Net Worth Estimate","Annual Housing Cost","Projected Liquid Assets at Retirement","Estimated Pre-65 MAGI","Inflated ACA Cliff","Verdict"];
   const esc2=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
   const lines=[head.map(esc2).join(",")];
   lastRows.forEach(r=>{
     lines.push([r.rank, r.s.stateName, r.confidence, Math.round(r.incomeTax), Math.round(r.propertyTax), Math.round(r.salesTax),
-      Math.round(r.ins), Math.round(r.col), Math.round(r.hc), Math.round(r.impact), Math.round(r.cumulativeImpact), Math.round(r.projected), Math.round(housingCash),
+      Math.round(r.ins), Math.round(r.col), Math.round(r.hc), Math.round(r.impact), Math.round(r.cumulativeImpact), Math.round(r.projected), Math.round(housingCash), Math.round(calculateAdvancedSnapshot(profile).projectedLiquidAtRetire), Math.round(calculateAdvancedSnapshot(profile).estimatedAcaMagiAtRetire), Math.round(calculateAdvancedSnapshot(profile).acaCliffAtRetire),
       verdictFor(profile,r,lastRows).map(v=>v.t).join("; ")].map(esc2).join(","));
   });
   const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8;"});
@@ -959,7 +1124,7 @@ function reset(){
 buildForm();
 buildPresets();
 buildStateGrid();
-document.getElementById("vintage").textContent = "Approximate 2025 tax-year rules, last reviewed " + DATA_VINTAGE + " · selected beta states only · all calculations run locally in your browser";
+document.getElementById("vintage").textContent = "Approximate 2025 tax-year rules, last reviewed " + DATA_VINTAGE + " · selected beta states only · v5 FIRE snapshot included · all calculations run locally in your browser";
 document.getElementById("btnCalc").addEventListener("click",calculate);
 document.getElementById("btnReset").addEventListener("click",reset);
 document.getElementById("btnCopy").addEventListener("click",copyReport);
